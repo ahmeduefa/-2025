@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="ar">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>خريطة المستشفيات - عرض إحصائي احترافي</title>
+
+  <!-- Tailwind عبر CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- Leaflet CSS & JS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
+
+  <!-- jQuery + DataTables -->
+  <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+  <style>
+    #map { height: 400px; border-radius: 12px; box-shadow: 0 6px 20px rgba(15,23,42,0.08); }
+    .card { background: white; border-radius: 12px; padding: 16px; box-shadow: 0 6px 18px rgba(15,23,42,0.06); }
+    body { direction: rtl; font-family: "Segoe UI", Tahoma, sans-serif; background: #f8fafc; }
+  </style>
+</head>
+<body class="p-6">
+
+  <div class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-6">
+
+    <!-- الخريطة -->
+    <div class="card col-span-2">
+      <h2 class="text-xl font-bold mb-4">خريطة المستشفيات</h2>
+      <div id="map"></div>
+    </div>
+
+    <!-- الإحصائية -->
+    <div class="card">
+      <h2 class="text-xl font-bold mb-4">إحصائيات المستشفيات</h2>
+      <canvas id="hospitalChart" height="200"></canvas>
+    </div>
+
+    <!-- جدول المستشفيات -->
+    <div class="card col-span-3">
+      <h2 class="text-xl font-bold mb-4">قائمة المستشفيات</h2>
+      <table id="hospitalTable" class="display" style="width:100%">
+        <thead>
+          <tr>
+            <th>الاسم</th>
+            <th>المدينة</th>
+            <th>عدد الأسرة</th>
+            <th>النوع</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>مستشفى القاهرة</td><td>القاهرة</td><td>120</td><td>حكومي</td></tr>
+          <tr><td>مستشفى الإسكندرية</td><td>الإسكندرية</td><td>90</td><td>خاص</td></tr>
+          <tr><td>مستشفى أسيوط</td><td>أسيوط</td><td>70</td><td>حكومي</td></tr>
+          <tr><td>مستشفى المنصورة</td><td>الدقهلية</td><td>100</td><td>جامعي</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+  </div>
+
+  <script>
+    // الخريطة
+    var map = L.map('map').setView([30.0444, 31.2357], 6);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap'
+    }).addTo(map);
+
+    // أمثلة مستشفيات
+    var hospitals = [
+      { name: "مستشفى القاهرة", coords: [30.0444, 31.2357] },
+      { name: "مستشفى الإسكندرية", coords: [31.2001, 29.9187] },
+      { name: "مستشفى أسيوط", coords: [27.1801, 31.1837] },
+      { name: "مستشفى المنصورة", coords: [31.0409, 31.3785] }
+    ];
+    hospitals.forEach(h => {
+      L.marker(h.coords).addTo(map).bindPopup(h.name);
+    });
+
+    // الرسم البياني
+    new Chart(document.getElementById('hospitalChart'), {
+      type: 'bar',
+      data: {
+        labels: ['حكومي', 'خاص', 'جامعي'],
+        datasets: [{
+          label: 'عدد المستشفيات',
+          data: [2, 1, 1],
+          backgroundColor: ['rgba(59,130,246,0.7)','rgba(16,185,129,0.7)','rgba(245,158,11,0.7)'],
+          borderRadius: 8
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true } }
+      }
+    });
+
+    // جدول DataTables
+    $(document).ready(function () {
+      $('#hospitalTable').DataTable();
+    });
+  </script>
+</body>
+</html>
