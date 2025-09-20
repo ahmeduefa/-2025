@@ -1,558 +1,212 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>نظام إدارة المستشفيات - تجمع عسير الصحي (مُحسّن)</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>خريطة المستشفيات</title>
 
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
-    <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
+  <!-- Leaflet -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
-    <!-- Font Awesome -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <!-- jQuery + DataTables -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css"/>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 
-    <!-- jQuery + DataTables -->
-    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css"/>
-    <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.0/dist/chart.umd.min.js"></script>
-
-    <style>
-        /* عام */
-        *{box-sizing:border-box;margin:0;padding:0;font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif}
-        :root {
-            --moh-green: #007e3a;
-            --moh-dark-green: #00612d;
-            --moh-gold: #d4af37;
-            --moh-white: #fff;
-            --moh-light-gray: #f5f5f5;
-            --stat-brightness: 0.95; /* قابل للتعديل بواسطة السلايدر */
-        }
-        body { background:var(--moh-light-gray); color:#333; padding:16px; direction: rtl }
-        .container { max-width:1400px; margin:0 auto; }
-
-        header {
-            background: linear-gradient(135deg,var(--moh-green),var(--moh-dark-green));
-            color:var(--moh-white); padding:18px; border-radius:10px; margin-bottom:18px; text-align:center;
-        }
-        .logo { width:64px;height:64px;border-radius:50%;background:#fff;color:var(--moh-green);display:inline-flex;align-items:center;justify-content:center;font-size:26px;margin-left:12px; }
-        h1 { font-size:1.4rem }
-
-        .dashboard { display:grid; grid-template-columns: 1fr 420px; gap:16px; margin-bottom:16px; }
-        @media (max-width: 980px){ .dashboard{ grid-template-columns: 1fr; } }
-
-        .card { background:#fff;border-radius:10px;padding:12px;box-shadow:0 6px 18px rgba(2,6,23,0.06); overflow:hidden; }
-        .card-header { display:flex; gap:10px; align-items:center; padding-bottom:8px; border-bottom:1px solid #eee; margin-bottom:10px; color: var(--moh-green); font-weight:700 }
-        .card-body { padding-top:8px; }
-
-        /* خريطة */
-        #hospitals-map { width:100%; height:600px; border-radius:8px; }
-
-        /* الإحصائيات */
-        .stats-area { display:flex; flex-direction:column; gap:12px; }
-        .stats-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:10px; }
-        @media (max-width:780px){ .stats-grid{ grid-template-columns:1fr } }
-
-        .stat-card {
-            background: linear-gradient(135deg,var(--moh-green),var(--moh-dark-green));
-            color:var(--moh-white);
-            border-radius:10px;
-            padding:12px;
-            display:flex;
-            align-items:center;
-            gap:12px;
-            filter: brightness(var(--stat-brightness));
-        }
-        .stat-card .icon { width:44px;height:44px;border-radius:8px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;font-size:18px }
-        .stat-info { text-align:right; }
-        .stat-number { font-size:1.5rem;font-weight:700; }
-        .stat-label { font-size:0.85rem; opacity:0.9; }
-
-        .controls { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
-        .controls button { padding:8px 10px;border-radius:8px;border:none;background:var(--moh-green); color:#fff; cursor:pointer; display:inline-flex; gap:8px; align-items:center; }
-        .controls button.secondary { background:var(--moh-gold); color:#222; }
-
-        /* سلايدر التعتيم */
-        .darkness-control { display:flex; gap:8px; align-items:center; margin-top:6px; font-size:0.9rem; color:#555 }
-        .darkness-control input[type="range"] { width:160px }
-
-        /* الرسم */
-        .charts { display:flex; gap:8px; align-items:center; }
-        .chart-card { background:#fff; border-radius:8px; padding:8px; box-shadow:0 4px 10px rgba(2,6,23,0.04); width:100%; }
-
-        /* جدول */
-        .table-wrapper { margin-top:12px; overflow:auto; background:#fff; border-radius:8px; padding:10px; box-shadow:0 6px 18px rgba(2,6,23,0.04) }
-        table.dataTable { width:100% !important; }
-        th, td { text-align:right; padding:10px 12px; vertical-align:middle; }
-        .hospital-name { display:flex; flex-direction:column; gap:4px; }
-        .hospital-name .muted { color:#666; font-size:0.85rem }
-        .badge { display:inline-block; padding:6px 8px; border-radius:999px; font-size:0.8rem; color:#fff; }
-
-        /* buttons inside table */
-        .btn-details { background:transparent;border:1px solid #ddd;padding:6px 8px;border-radius:8px;cursor:pointer; }
-        .btn-details:hover { background:#f6f6f6 }
-
-        /* modal */
-        .modal { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:9999; justify-content:center; align-items:center; padding:16px }
-        .modal-content { background:#fff; border-radius:10px; max-width:760px; width:100%; padding:18px; max-height:90vh; overflow:auto }
-        .modal .modal-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px }
-        .modal .detail-item { display:flex; gap:10px; margin-bottom:10px }
-        .modal .detail-label { min-width:120px; font-weight:700; color:var(--moh-green) }
-
-        /* legend */
-        .legend { background:#fff; padding:8px; border-radius:8px; box-shadow:0 8px 20px rgba(2,6,23,0.06); font-size:0.85rem; }
-
-        /* misc */
-        .notification { position:fixed; bottom:18px; left:18px; background:var(--moh-green); color:#fff; padding:10px 14px; border-radius:8px; display:none; z-index:99999 }
-    </style>
+  <style>
+    body { font-family: Tahoma, Arial, sans-serif; margin:0; padding:0; background:#f9f9f9; }
+    header { background:#007e3a; color:#fff; text-align:center; padding:15px; font-size:1.3em; }
+    #map { width:100%; height:350px; }
+    .container { padding:15px; }
+    table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; }
+    th, td { padding:10px; border:1px solid #ddd; font-size:14px; }
+    th { background:#007e3a; color:#fff; }
+    tr:nth-child(even) { background:#f2f2f2; }
+    .stats { display:flex; flex-wrap:wrap; gap:10px; margin-bottom:15px; }
+    .stat { flex:1; min-width:120px; background:#fff; padding:10px; border-radius:8px; text-align:center; box-shadow:0 2px 5px rgba(0,0,0,0.1); }
+    #charts { display:flex; flex-wrap:wrap; gap:15px; margin-top:20px; }
+    #charts canvas { flex:1; min-width:250px; max-width:100%; background:#fff; padding:10px; border-radius:8px; }
+    .btn-details { padding:4px 8px; background:#007e3a; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    #details-modal { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; }
+    #details-modal .modal-content { background:#fff; padding:20px; border-radius:10px; width:90%; max-width:500px; }
+    #close-modal { float:left; cursor:pointer; color:#f00; }
+  </style>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div style="display:flex;align-items:center;justify-content:center;gap:12px">
-                <div class="logo"><i class="fas fa-hospital"></i></div>
-                <div style="text-align:right">
-                    <h1>نظام إدارة المستشفيات - تجمع عسير الصحي</h1>
-                    <div style="opacity:0.85; font-size:0.95rem">منصة متكاملة — عرض تفاعلي، بحث، تصفية وخرائط</div>
-                </div>
-            </div>
-        </header>
 
-        <div class="dashboard">
-            <!-- الخريطة -->
-            <div class="card">
-                <div class="card-header"><i class="fas fa-map-marked-alt"></i><span>الخريطة التفاعلية للمستشفيات</span></div>
-                <div class="card-body">
-                    <div id="hospitals-map"></div>
-                    <div style="margin-top:10px; display:flex; gap:8px; align-items:center; justify-content:flex-start">
-                        <button id="zoom-in"><i class="fas fa-search-plus"></i> تكبير</button>
-                        <button id="zoom-out"><i class="fas fa-search-minus"></i> تصغير</button>
-                        <button id="reset-view" class="secondary"><i class="fas fa-globe"></i> عرض الكل</button>
-                        <div style="margin-left:auto" class="legend">
-                            <strong style="display:block; text-align:center; color:var(--moh-green)">وسيلة الإيضاح</strong>
-                            <div style="display:flex; gap:8px; margin-top:6px; align-items:center">
-                                <div style="width:12px;height:12px;background:#007e3a;border-radius:6px"></div><small>مركزية</small>
-                                <div style="width:12px;height:12px;background:#17a2b8;border-radius:6px;margin-right:8px"></div><small>عام</small>
-                                <div style="width:12px;height:12px;background:#1a2a6c;border-radius:6px;margin-right:8px"></div><small>متخصصة</small>
-                                <div style="width:12px;height:12px;background:#d4af37;border-radius:6px;margin-right:8px"></div><small>خاص</small>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
+<header>خريطة المستشفيات</header>
+<div id="map"></div>
 
-            <!-- الاحصائيات -->
-            <div class="card">
-                <div class="card-header"><i class="fas fa-chart-line"></i><span>إحصائيات عامة</span></div>
-                <div class="card-body stats-area">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="icon"><i class="fas fa-hospital"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="stat-total">0</div>
-                                <div class="stat-label">عدد المستشفيات</div>
-                            </div>
-                        </div>
+<div class="container">
+  <div class="stats">
+    <div class="stat"><div>إجمالي المستشفيات</div><div id="stat-total">0</div></div>
+    <div class="stat"><div>عدد الأسرة</div><div id="stat-beds">0</div></div>
+    <div class="stat"><div>أسرة العناية</div><div id="stat-icu">0</div></div>
+    <div class="stat"><div>القطاع الخاص</div><div id="stat-private">0</div></div>
+  </div>
 
-                        <div class="stat-card">
-                            <div class="icon"><i class="fas fa-bed"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="stat-beds">0</div>
-                                <div class="stat-label">إجمالي الأسرة</div>
-                            </div>
-                        </div>
+  <input type="text" id="search-input" placeholder="ابحث عن مستشفى..." style="margin-bottom:10px; padding:5px; width:100%; max-width:300px;">
+  <table id="hospital-table">
+    <thead>
+      <tr>
+        <th>الاسم</th>
+        <th>المحافظة</th>
+        <th>النوع</th>
+        <th>الجهة</th>
+        <th>الأسرة</th>
+        <th>العناية</th>
+        <th>تفاصيل</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
 
-                        <div class="stat-card">
-                            <div class="icon"><i class="fas fa-procedures"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="stat-icu">0</div>
-                                <div class="stat-label">أسرة العناية المركزة</div>
-                            </div>
-                        </div>
+  <div id="charts">
+    <canvas id="chart-type"></canvas>
+    <canvas id="chart-supervisor"></canvas>
+  </div>
+</div>
 
-                        <div class="stat-card">
-                            <div class="icon"><i class="fas fa-user-md"></i></div>
-                            <div class="stat-info">
-                                <div class="stat-number" id="stat-private">0</div>
-                                <div class="stat-label">مستشفيات خاصة</div>
-                            </div>
-                        </div>
-                    </div>
+<!-- Modal -->
+<div id="details-modal">
+  <div class="modal-content">
+    <span id="close-modal">✖</span>
+    <h3 id="modal-hospital-name"></h3>
+    <div id="modal-content-body"></div>
+  </div>
+</div>
 
-                    <div class="controls">
-                        <div class="darkness-control">
-                            <label for="stat-darkness">تعتيم الإحصائيات</label>
-                            <input id="stat-darkness" type="range" min="0.6" max="1.0" step="0.01" value="0.95">
-                        </div>
+<script>
+let hospitals = [];
+let map;
+let dataTable;
+let chartType, chartSupervisor;
 
-                        <div style="margin-right:auto; display:flex; gap:8px; align-items:center;">
-                            <button id="refresh-data"><i class="fas fa-sync-alt"></i> تحديث البيانات</button>
-                        </div>
-                    </div>
+// تحميل البيانات من Google Sheets CSV
+async function loadHospitals(){
+  const url = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6OX3acZw-8gzNb36iUGra5OI-7TQmhEeZTxpoyyPO1kdYNlycokRPa4FWf9pY6CRRRu9fl0SHhBVZ/pub?gid=0&single=true&output=csv";
+  const res = await fetch(url);
+  const text = await res.text();
+  const rows = text.trim().split("\n").map(r=>r.split(","));
+  const headers = rows[0];
+  hospitals = rows.slice(1).map(r=>({
+    name: r[0],
+    city: r[1],
+    type: r[2],
+    supervisor: r[3],
+    beds: +r[4] || 0,
+    icu: +r[5] || 0,
+    lat: +r[6],
+    lng: +r[7],
+    googleMaps: r[8]
+  }));
+  init();
+}
 
-                    <div style="margin-top:12px;" class="charts">
-                        <div class="chart-card" style="width:48%">
-                            <canvas id="typeChart" height="160"></canvas>
-                        </div>
-                        <div class="chart-card" style="width:52%">
-                            <canvas id="bedsChart" height="160"></canvas>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
+function init(){
+  // خريطة
+  map = L.map('map').setView([24,45], 5);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
 
-        <!-- بيانات وفلترة -->
-        <div class="card table-wrapper">
-            <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px; flex-wrap:wrap;">
-                <select id="filter-type" style="min-width:200px; padding:8px; border-radius:8px;">
-                    <option value="">جميع الأنواع</option>
-                    <option value="عام">مستشفيات عامة</option>
-                    <option value="مركزية">مستشفيات مركزية</option>
-                    <option value="متخصصة">مستشفيات متخصصة</option>
-                    <option value="خاص">مستشفيات خاصة</option>
-                </select>
+  hospitals.forEach(h=>{
+    if(!h.lat || !h.lng) return;
+    L.marker([h.lat,h.lng]).addTo(map).bindPopup(`<b>${h.name}</b><br>${h.city}`);
+  });
 
-                <select id="filter-supervisor" style="min-width:200px; padding:8px; border-radius:8px;">
-                    <option value="">جميع الجهات المشرفة</option>
-                    <option value="التجمع الصحي بعسير">التجمع الصحي بعسير</option>
-                    <option value="تجمع عسير الصحي">تجمع عسير الصحي</option>
-                    <option value="القطاع الخاص">القطاع الخاص</option>
-                </select>
+  // جدول
+  dataTable = $('#hospital-table').DataTable({
+    data: hospitals,
+    columns:[
+      {data:"name"},
+      {data:"city"},
+      {data:"type"},
+      {data:"supervisor"},
+      {data:"beds"},
+      {data:"icu"},
+      {
+        data:null,
+        render:d=>`<button class="btn-details" data-name="${d.name}">عرض</button>`
+      }
+    ]
+  });
 
-                <input id="search-input" placeholder="ابحث باسم المستشفى أو المحافظة..." style="flex:1; padding:8px; border-radius:8px; min-width:200px" />
-            </div>
+  // إحصائيات
+  updateStatsDisplay();
 
-            <table id="hospitals-data-table" class="display" style="width:100%">
-                <thead>
-                    <tr>
-                        <th style="width:60px">#</th>
-                        <th>اسم المستشفى</th>
-                        <th>المحافظة</th>
-                        <th>النوع</th>
-                        <th>الجهة المشرفة</th>
-                        <th>عدد الأسرة</th>
-                        <th>أسرة العناية</th>
-                        <th>أقرب مستشفى</th>
-                        <th style="width:90px">التفاصيل</th>
-                    </tr>
-                </thead>
-                <tbody id="hospitals-table">
-                    <!-- يُملأ بالـ JS -->
-                </tbody>
-            </table>
-        </div>
+  // Charts
+  initCharts();
 
-        <footer style="margin-top:18px; text-align:center; color:var(--moh-green)">
-            © 2023 وزارة الصحة - المملكة العربية السعودية. كل الحقوق محفوظة.
-        </footer>
-    </div>
+  // بحث
+  $('#search-input').on('keyup', function(){
+    dataTable.search(this.value).draw();
+  });
 
-    <!-- مودال التفاصيل -->
-    <div class="modal" id="details-modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2 id="modal-hospital-name">اسم المستشفى</h2>
-                <button id="close-modal" style="background:none;border:none;font-size:20px;cursor:pointer">&times;</button>
-            </div>
-            <div id="modal-content-body"></div>
-        </div>
-    </div>
+  // تفاصيل
+  $(document).on('click','.btn-details', function(){
+    const name = $(this).data('name');
+    const h = hospitals.find(x=>x.name===name);
+    $('#modal-hospital-name').text(h.name);
+    $('#modal-content-body').html(`
+      <p><b>المحافظة:</b> ${h.city}</p>
+      <p><b>النوع:</b> ${h.type}</p>
+      <p><b>الجهة:</b> ${h.supervisor}</p>
+      <p><b>الأسرة:</b> ${h.beds}</p>
+      <p><b>العناية:</b> ${h.icu}</p>
+      <p><a href="${h.googleMaps}" target="_blank">فتح في Google Maps</a></p>
+    `);
+    $('#details-modal').fadeIn();
+  });
 
-    <div class="notification" id="notification"></div>
+  $('#close-modal').on('click', ()=> $('#details-modal').fadeOut());
+  $('#details-modal').on('click', e=>{ if(e.target.id==="details-modal") $('#details-modal').fadeOut(); });
+}
 
-    <script>
-        /********* بيانات المستشفيات (عدل هنا عند الحاجة) *********/
-        const hospitals = [
-            {id: 1, name: "مستشفى عسير المركزي", city: "أبها", supervisor: "التجمع الصحي بعسير", type: "مركزية", beds: 408, icu: 50, lat: 18.2195, lng: 42.535, googleMaps: "https://maps.app.goo.gl/itDwkiPRgRT9LNxy6"},
-            {id: 2, name: "مستشفى الملك عبدالله", city: "بيشة", supervisor: "التجمع الصحي بعسير", type: "عام", beds: 360, icu: 30, lat: 18.2393, lng: 42.4967, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2393,42.4967"},
-            {id: 3, name: "مستشفى ابها للولادة والأطفال", city: "أبها", supervisor: "التجمع الصحي بعسير", type: "متخصصة", beds: 212, icu: 4, lat: 18.2163, lng: 42.5516, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2163,42.5516"},
-            {id: 4, name: "خميس مشيط للولادة والأطفال", city: "خميس مشيط", supervisor: "التجمع الصحي بعسير", type: "متخصصة", beds: 200, icu: 0, lat: 18.2985, lng: 42.7554, googleMaps: "https://maps.app.goo.gl/PMt7oGTEPPVp1HS47"},
-            {id: 5, name: "مستشفى محايل العام", city: "عسير", supervisor: "تجمع عسير الصحي", type: "عام", beds: 170, icu: 10, lat: 18.5583, lng: 42.0621, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.5583,42.0621"},
-            {id: 6, name: "خميس مشيط العام", city: "خميس مشيط", supervisor: "التجمع الصحي بعسير", type: "عام", beds: 150, icu: 15, lat: 18.2838, lng: 42.7483, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2838,42.7483"},
-            {id: 7, name: "مستشفى سراة عبيدة العام", city: "سراة عبيدة", supervisor: "التجمع الصحي بعسير", type: "عام", beds: 110, icu: 5, lat: 18.0645, lng: 43.1539, googleMaps: "https://maps.app.goo.gl/N5i17V1uEYdo3ZVW8"},
-            {id: 8, name: "مستشفى إرادة والصحة النفسية بأبها", city: "أبها", supervisor: "التجمع الصحي بعسير", type: "متخصصة", beds: 100, icu: 0, lat: 18.2045, lng: 42.5029, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2045,42.5029"},
-            {id: 9, name: "مستشفى الولادة والأطفال بيشة", city: "بيشة", supervisor: "التجمع الصحي بعسير", type: "متخصصة", beds: 100, icu: 6, lat: 20.0152, lng: 42.6186, googleMaps: "https://maps.app.goo.gl/LH8XgWrEwTuPqQvx6"},
-            {id: 10, name: "مستشفى أحد رفيدة العام", city: "أحد رفيدة", supervisor: "التجمع الصحي بعسير", type: "عام", beds: 100, icu: 10, lat: 18.1725, lng: 42.8251, googleMaps: "https://maps.app.goo.gl/UPRutRfUat1wHzwc9"},
-            {id: 30, name: "المستشفى السعودي الألماني", city: "خميس مشيط", supervisor: "القطاع الخاص", type: "خاص", beds: 400, icu: 52, lat: 18.2527, lng: 42.5624, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2527,42.5624"},
-            {id: 31, name: "مستشفى الحياة الوطني - خميس مشيط", city: "خميس مشيط", supervisor: "القطاع الخاص", type: "خاص", beds: 200, icu: 30, lat: 18.2917, lng: 42.748, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2917,42.748"},
-            {id: 32, name: "مستشفى أبها الخاص", city: "أبها", supervisor: "القطاع الخاص", type: "خاص", beds: 200, icu: 46, lat: 18.2327, lng: 42.4984, googleMaps: "https://maps.app.goo.gl/YSyE5aXVokwQefEH9"},
-            {id: 33, name: "الحياة الوطني أبها", city: "أبها", supervisor: "القطاع الخاص", type: "خاص", beds: 200, icu: 40, lat: 18.2384, lng: 42.5678, googleMaps: "https://www.google.com/maps/search/?api=1&query=18.2384,42.5678"}
-        ];
+function updateStatsDisplay(){
+  const total = hospitals.length;
+  const totalBeds = hospitals.reduce((a,b)=>a+b.beds,0);
+  const totalIcu = hospitals.reduce((a,b)=>a+b.icu,0);
+  const privateCount = hospitals.filter(h=>h.type==="خاص").length;
+  $('#stat-total').text(total);
+  $('#stat-beds').text(totalBeds);
+  $('#stat-icu').text(totalIcu);
+  $('#stat-private').text(privateCount);
+}
 
-        /********* وظائف مساعدة *********/
-        function deg2rad(deg){ return deg*(Math.PI/180); }
-        function calculateDistance(lat1, lon1, lat2, lon2){
-            const R = 6371;
-            const dLat = deg2rad(lat2 - lat1);
-            const dLon = deg2rad(lon2 - lon1);
-            const a = Math.sin(dLat/2)*Math.sin(dLat/2) + Math.cos(deg2rad(lat1))*Math.cos(deg2rad(lat2))*Math.sin(dLon/2)*Math.sin(dLon/2);
-            const c = 2*Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-            return R*c;
-        }
+function initCharts(){
+  const ctx1 = document.getElementById('chart-type').getContext('2d');
+  const ctx2 = document.getElementById('chart-supervisor').getContext('2d');
 
-        // إيجاد أقرب مستشفى لكل مستشفى
-        function findClosestHospitals(){
-            hospitals.forEach(h=>{
-                let distMin = Infinity, closest = null;
-                hospitals.forEach(o=>{
-                    if(o.id===h.id) return;
-                    const d = calculateDistance(h.lat,h.lng,o.lat,o.lng);
-                    if(d < distMin){ distMin = d; closest = o; }
-                });
-                h.closest = closest;
-                h.closestDistance = distMin===Infinity? null : Number(distMin.toFixed(1));
-            });
-        }
+  const typeCounts = {};
+  const supCounts = {};
+  hospitals.forEach(h=>{
+    typeCounts[h.type] = (typeCounts[h.type]||0)+1;
+    supCounts[h.supervisor] = (supCounts[h.supervisor]||0)+1;
+  });
 
-        // حساب إحصائيات
-        function calculateStats(){
-            let totalBeds=0, totalIcu=0, privateCount=0, generalCount=0, specializedCount=0;
-            hospitals.forEach(h=>{
-                totalBeds+= (h.beds||0); totalIcu += (h.icu||0);
-                if(h.type === "خاص") privateCount++;
-                else if(h.type === "عام") generalCount++;
-                else if(h.type === "متخصصة" || h.type === "مركزية") specializedCount++;
-            });
-            return { total: hospitals.length, totalBeds, totalIcu, privateCount, generalCount, specializedCount };
-        }
+  chartType = new Chart(ctx1,{
+    type:'pie',
+    data:{
+      labels:Object.keys(typeCounts),
+      datasets:[{data:Object.values(typeCounts), backgroundColor:["#007e3a","#f39c12","#3498db","#e74c3c"]}]
+    }
+  });
 
-        // تأثير عدّ سريع
-        function animateValue(el, start, end, duration=1000){
-            start = Number(start)||0; end = Number(end)||0;
-            let startTime = null;
-            function step(ts){
-                if(!startTime) startTime = ts;
-                const progress = Math.min((ts - startTime) / duration, 1);
-                const value = Math.floor(start + (end - start) * progress);
-                el.textContent = value.toLocaleString();
-                if(progress < 1) requestAnimationFrame(step);
-            }
-            requestAnimationFrame(step);
-        }
+  chartSupervisor = new Chart(ctx2,{
+    type:'bar',
+    data:{
+      labels:Object.keys(supCounts),
+      datasets:[{data:Object.values(supCounts), backgroundColor:"#007e3a"}]
+    },
+    options:{plugins:{legend:{display:false}}}
+  });
+}
 
-        // إشعار
-        function showNotification(msg, time=2200){
-            const n = document.getElementById('notification');
-            n.textContent = msg; n.style.display = 'block';
-            setTimeout(()=> n.style.display = 'none', time);
-        }
+loadHospitals();
+</script>
 
-        /********* تهيئة الخريطة والعلامات *********/
-        const map = L.map('hospitals-map').setView([18.5, 42.5], 9);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom:18, attribution: '&copy; OpenStreetMap' }).addTo(map);
-        const markersMap = {}; // لتخزين الماركَر حسب id
-
-        function colorByType(type){
-            if(type === "خاص") return '#d4af37';
-            if(type === "مركزية") return '#007e3a';
-            if(type === "متخصصة") return '#1a2a6c';
-            return '#17a2b8';
-        }
-
-        function addMarkers(){
-            hospitals.forEach(h=>{
-                const color = colorByType(h.type);
-                const html = `<div style="background:${color};width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:14px"><i class="fas fa-hospital"></i></div>`;
-                const icon = L.divIcon({ className:'', html, iconSize:[34,34], iconAnchor:[17,34] });
-                const marker = L.marker([h.lat,h.lng], { icon }).addTo(map)
-                    .bindPopup(`<div style="text-align:right;direction:rtl">
-                        <strong style="display:block;margin-bottom:6px;color:${color}">${h.name}</strong>
-                        <div style="font-size:0.9rem">المحافظة: ${h.city}</div>
-                        <div style="font-size:0.9rem">النوع: ${h.type}</div>
-                        <div style="font-size:0.9rem">الأسرة: ${h.beds} - العناية: ${h.icu}</div>
-                        <div style="margin-top:6px"><a target="_blank" href="${h.googleMaps}">عرض على الخريطة</a></div>
-                    </div>`);
-                markersMap[h.id] = marker;
-            });
-        }
-
-        /********* رسم الجدول (DOM) ثم تحويله لـ DataTable *********/
-        function createHospitalRow(h){
-            const color = colorByType(h.type);
-            const nameCell = `
-                <div class="hospital-name">
-                    <strong style="font-size:1rem">${h.name}</strong>
-                    <div class="muted">${h.city} · <a href="${h.googleMaps}" target="_blank">خريطة</a></div>
-                </div>
-            `;
-            const typeCell = `<span class="badge" style="background:${color}">${h.type}</span>`;
-            const closestText = h.closest ? `${h.closest.name} (${h.closestDistance} كم)` : 'غير متوفر';
-            const detailsBtn = `<button class="btn-details" data-id="${h.id}" title="تفاصيل"><i class="fas fa-info-circle"></i></button>`;
-            return `
-                <tr>
-                    <td>${h.id}</td>
-                    <td>${nameCell}</td>
-                    <td>${h.city}</td>
-                    <td>${typeCell}</td>
-                    <td>${h.supervisor}</td>
-                    <td>${h.beds}</td>
-                    <td>${h.icu}</td>
-                    <td>${closestText}</td>
-                    <td>${detailsBtn}</td>
-                </tr>
-            `;
-        }
-
-        function populateTableDOM(){
-            const tbody = document.getElementById('hospitals-table');
-            tbody.innerHTML = hospitals.map(h => createHospitalRow(h)).join('');
-        }
-
-        let dataTable = null;
-        function initDataTable(){
-            if(dataTable) return;
-            dataTable = $('#hospitals-data-table').DataTable({
-                pageLength: 8,
-                lengthMenu: [5,8,12,20],
-                columnDefs: [ { orderable: false, targets: [8] } ],
-                language: {
-                    search: "بحث:",
-                    lengthMenu: "عرض _MENU_ سجلات",
-                    info: "عرض _START_ إلى _END_ من أصل _TOTAL_",
-                    paginate: { next: "التالي", previous: "السابق" },
-                    zeroRecords: "لا توجد نتائج مطابقة"
-                }
-            });
-
-            // فلترة مخصصة تعتمد على select
-            $.fn.dataTable.ext.search.push(function(settings, data, dataIndex){
-                const typeFilter = $('#filter-type').val();
-                const supFilter = $('#filter-supervisor').val();
-                const rowTypeHtml = data[3] || '';
-                const rowTypeText = $('<div>').html(rowTypeHtml).text().trim();
-                const rowSup = data[4] || '';
-
-                if(typeFilter !== '' && rowTypeText.indexOf(typeFilter) === -1) return false;
-                if(supFilter !== '' && rowSup.indexOf(supFilter) === -1) return false;
-                return true;
-            });
-        }
-
-        /********* Charts (Chart.js) *********/
-        let typeChart = null, bedsChart = null;
-        function initCharts(){
-            const typeCtx = document.getElementById('typeChart').getContext('2d');
-            typeChart = new Chart(typeCtx, {
-                type: 'doughnut',
-                data: {
-                    labels: ['خاص','عام','متخصصة/مركزية'],
-                    datasets: [{ data: [0,0,0], hoverOffset:6 }]
-                },
-                options: { plugins:{ legend:{position:'bottom', labels:{boxWidth:10}} } }
-            });
-
-            const bedsCtx = document.getElementById('bedsChart').getContext('2d');
-            bedsChart = new Chart(bedsCtx, {
-                type: 'bar',
-                data: { labels: [], datasets: [{ label: 'عدد الأسرة', data: [] }] },
-                options: { scales:{ y:{ beginAtZero:true } }, plugins:{ legend:{display:false} } }
-            });
-        }
-
-        function updateCharts(stats){
-            // doughnut
-            typeChart.data.datasets[0].data = [stats.privateCount, stats.generalCount, stats.specializedCount];
-            typeChart.update();
-
-            // top 5 by beds
-            const top = hospitals.slice().sort((a,b)=>b.beds - a.beds).slice(0,5);
-            bedsChart.data.labels = top.map(t=>t.name);
-            bedsChart.data.datasets[0].data = top.map(t=>t.beds);
-            bedsChart.update();
-        }
-
-        /********* تحديث الإحصائيات وواجهة *********/
-        function updateStatsDisplay(){
-            const stats = calculateStats();
-            animateValue(document.getElementById('stat-total'), 0, stats.total, 1000);
-            animateValue(document.getElementById('stat-beds'), 0, stats.totalBeds, 1000);
-            animateValue(document.getElementById('stat-icu'), 0, stats.totalIcu, 1000);
-            animateValue(document.getElementById('stat-private'), 0, stats.privateCount, 1000);
-            updateCharts(stats);
-        }
-
-        /********* حدث الزرار وفلترة الجدول *********/
-        document.getElementById('zoom-in').addEventListener('click', ()=>{ map.zoomIn(); showNotification('تم تكبير الخريطة'); });
-        document.getElementById('zoom-out').addEventListener('click', ()=>{ map.zoomOut(); showNotification('تم تصغير الخريطة'); });
-        document.getElementById('reset-view').addEventListener('click', ()=>{ map.setView([18.5,42.5],9); showNotification('تم إعادة تعيين عرض الخريطة'); });
-
-        // سلايدر التعتيم
-        const slider = document.getElementById('stat-darkness');
-        slider.addEventListener('input', (e)=> {
-            document.documentElement.style.setProperty('--stat-brightness', e.target.value);
-        });
-        // تفعيل القيمة الابتدائية
-        document.documentElement.style.setProperty('--stat-brightness', slider.value);
-
-        document.getElementById('refresh-data').addEventListener('click', ()=>{
-            // لو تريد جلب بيانات من Google Sheets هنا — الآن نعيد حساب ونعرض
-            findClosestHospitals();
-            populateTableDOM();
-            if(dataTable){ dataTable.clear().rows.add($('#hospitals-data-table tbody tr')).draw(); }
-            updateStatsDisplay();
-            showNotification('تم تحديث البيانات');
-        });
-
-        // فلترة
-        $('#filter-type').on('change', ()=> dataTable ? dataTable.draw() : null );
-        $('#filter-supervisor').on('change', ()=> dataTable ? dataTable.draw() : null );
-        $('#search-input').on('input', function(){ if(dataTable) dataTable.search(this.value).draw(); });
-
-        /********* عرض التفاصيل (Modal) *********/
-        function showDetails(id){
-            const h = hospitals.find(x=>x.id===id);
-            if(!h) return;
-            document.getElementById('modal-hospital-name').textContent = h.name;
-            let html = '';
-            html += `<div class="detail-item"><div class="detail-label">المحافظة:</div><div>${h.city}</div></div>`;
-            html += `<div class="detail-item"><div class="detail-label">النوع:</div><div>${h.type}</div></div>`;
-            html += `<div class="detail-item"><div class="detail-label">الجهة المشرفة:</div><div>${h.supervisor}</div></div>`;
-            html += `<div class="detail-item"><div class="detail-label">عدد الأسرة:</div><div>${h.beds}</div></div>`;
-            html += `<div class="detail-item"><div class="detail-label">أسرة العناية:</div><div>${h.icu}</div></div>`;
-            if(h.closest){
-                html += `<div style="margin-top:10px; padding:10px; background:#f6fff6; border-right:4px solid var(--moh-green); border-radius:8px">
-                            <div style="font-weight:700; color:var(--moh-dark-green)">أقرب مستشفى</div>
-                            <div style="margin-top:6px">${h.closest.name} — ${h.closestDistance} كم — ${h.closest.type}</div>
-                         </div>`;
-            }
-            html += `<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap">
-                        <a href="${h.googleMaps}" target="_blank" class="btn-details" style="background:var(--moh-green);color:#fff;border:none">فتح في خرائط</a>
-                        <button class="btn-details" onclick="closeModal()">إغلاق</button>
-                     </div>`;
-            document.getElementById('modal-content-body').innerHTML = html;
-            document.getElementById('details-modal').style.display = 'flex';
-
-            // توسيط الخريطة وفتح البوب اب
-            const marker = markersMap[h.id];
-            if(marker){
-                marker.openPopup();
-                map.setView([h.lat, h.lng], 12);
-            }
-        }
-
-        function closeModal(){ document.getElementById('details-modal').style.display = 'none'; }
-        document.getElementById('close-modal').addEventListener('click', closeModal);
-        document.getElementById('details-modal').addEventListener('click', (e)=>{ if(e.target === document.getElementById('details-modal')) closeModal(); });
-
-        /********* تهيئة أولية عند التحميل *********/
-        (function init(){
-            findClosestHospitals();
-            addMarkers();
-            populateTableDOM();
-            initDataTable();
-            initCharts();
-            updateStatsDisplay();
-
-            // بعد تهيئة DataTable، ربط حدث الضغط على أزرار التفاصيل
-            $(document).on('click', '.btn-details', function(e){
-                const id = Number($(this).attr('data-id'));
-                showDetails(id);
-            });
-        })();
-    </script>
 </body>
 </html>
