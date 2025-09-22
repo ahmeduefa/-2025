@@ -69,7 +69,7 @@
             font-weight: bold; display: flex; align-items: center; gap: 10px;
         }
         .card-body { padding: 20px; height: 400px; }
-        .map-container { height: 100%; }
+        .map-container { height: 100%; position: relative; }
         #hospitals-map { width: 100%; height: 100%; border-radius: 8px; z-index: 1; }
         .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 280px; overflow-y: auto; padding: 5px; }
         .stat-card {
@@ -87,13 +87,13 @@
         }
         .stat-number { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; min-height: 30px; }
         .stat-label { font-size: 0.85rem; opacity: 0.9; }
-        button {
+        button, .action-btn {
             background: var(--moh-green); border: none; color: var(--moh-white);
             padding: 10px 15px; border-radius: 6px; cursor: pointer;
             transition: background 0.3s, transform 0.2s; display: flex;
-            align-items: center; gap: 8px; font-size: 0.9rem;
+            align-items: center; gap: 8px; font-size: 0.9rem; text-decoration: none;
         }
-        button:hover { background: var(--moh-dark-green); transform: translateY(-2px); }
+        button:hover, .action-btn:hover { background: var(--moh-dark-green); transform: translateY(-2px); }
         .data-section { margin-top: 25px; animation: fadeIn 1.5s ease; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
         .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
@@ -104,7 +104,7 @@
         }
         select:focus, input:focus { border-color: var(--moh-green); box-shadow: 0 0 0 2px rgba(0, 126, 58, 0.2); outline: none; }
         .table-container { overflow-x: auto; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
-        table { width: 100%; border-collapse: collapse; background: var(--moh-white); min-width: 800px; }
+        table { width: 100%; border-collapse: collapse; background: var(--moh-white); min-width: 600px; }
         th, td { padding: 12px 15px; text-align: right; border-bottom: 1px solid #e0e0e0; font-size: 0.9rem; }
         th {
             background: linear-gradient(135deg, var(--moh-green), var(--moh-dark-green));
@@ -114,23 +114,26 @@
         footer { text-align: center; padding: 20px; margin-top: 40px; color: var(--moh-green); font-size: 0.9rem; }
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0, 0, 0, 0.5); z-index: 1000; justify-content: center; align-items: center;
+            background-color: rgba(0, 0, 0, 0.6); z-index: 1000; justify-content: center; align-items: center;
         }
         .modal-content {
-            background-color: var(--moh-white); padding: 25px; border-radius: 12px;
-            width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); animation: scaleIn 0.3s ease;
+            background-color: var(--moh-white); padding: 25px 30px; border-radius: 12px;
+            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); animation: scaleIn 0.4s ease-out;
         }
-        @keyframes scaleIn { from { transform: scale(0.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
-        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 2px solid var(--moh-light-green); }
-        .modal-title { font-size: 1.4rem; color: var(--moh-green); font-weight: bold; }
-        .close-btn { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--moh-text); }
-        .detail-item { margin-bottom: 15px; display: flex; align-items: flex-start; }
-        .detail-label { font-weight: bold; min-width: 120px; color: var(--moh-dark-green); }
-        .detail-value { flex: 1; }
-        .action-buttons { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
-        .action-btn { padding: 10px 15px; border-radius: 6px; display: flex; align-items: center; gap: 8px; text-decoration: none; font-size: 0.9rem; }
-        .btn-primary { background-color: var(--moh-green); color: var(--moh-white); }
+        @keyframes scaleIn { from { transform: scale(0.8) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
+        .modal-title { font-size: 1.5rem; color: var(--moh-dark-green); font-weight: 600; }
+        .close-btn { background: #f1f1f1; border: none; font-size: 1.2rem; cursor: pointer; color: #555; width: 30px; height: 30px; border-radius: 50%; transition: all 0.3s; }
+        .close-btn:hover { background: #e0e0e0; color: black; }
+        .detail-group { margin-bottom: 20px; }
+        .detail-group-title { font-weight: bold; color: var(--moh-green); margin-bottom: 12px; border-bottom: 2px solid var(--moh-light-green); padding-bottom: 5px; }
+        .detail-item { margin-bottom: 12px; display: flex; align-items: center; font-size: 1rem; }
+        .detail-item-icon { color: var(--moh-green); min-width: 30px; font-size: 1.1rem; }
+        .detail-label { font-weight: bold; color: #555; margin-left: 5px; }
+        .action-buttons { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
+        .btn-primary { background-color: var(--moh-green); }
+        .btn-secondary { background-color: var(--moh-gold); color: var(--moh-dark-green); }
         .loading {
             width: 24px; height: 24px; border: 3px solid rgba(0, 126, 58, 0.3);
             border-radius: 50%; border-top-color: var(--moh-green);
@@ -148,6 +151,7 @@
         .user-location-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: var(--moh-green); }
         .user-location-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .location-info, .closest-hospital-info { padding: 15px; background-color: var(--moh-light-green); border-radius: 8px; }
+        #closest-hospital-data .info-item { margin-bottom: 8px; }
         .loader { display: flex; justify-content: center; align-items: center; height: 200px; flex-direction: column; gap: 15px; }
         .loader-text { color: var(--moh-green); font-weight: bold; }
         .back-to-top {
@@ -158,8 +162,37 @@
             z-index: 999; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
         }
         .back-to-top.visible { opacity: 1; visibility: visible; }
-        @media (max-width: 992px) { .dashboard { grid-template-columns: 1fr; } }
-        @media (max-width: 768px) { .user-location-content { grid-template-columns: 1fr; } }
+        .leaflet-div-icon { border: none; background-color: transparent; }
+        .map-marker {
+            width: 30px; height: 30px; border-radius: 50% 50% 50% 0;
+            transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 2px solid white;
+        }
+        .map-marker i { transform: rotate(45deg); font-size: 14px; color: white; }
+        .legend {
+            padding: 10px; background: white; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);
+            line-height: 1.5; font-size: 12px;
+        }
+        .legend i { width: 18px; height: 18px; float: right; margin-left: 8px; border-radius: 50%; }
+        
+        @media (max-width: 992px) {
+            .dashboard { grid-template-columns: 1fr; }
+            h1 { font-size: 1.5rem; }
+        }
+        @media (max-width: 768px) {
+            body { padding: 10px; }
+            .user-location-content { grid-template-columns: 1fr; }
+            .filters { flex-direction: column; }
+            .card-body { height: 350px; }
+            th:nth-child(5), td:nth-child(5), th:nth-child(7), td:nth-child(7) { display: none; }
+        }
+        @media (max-width: 480px) {
+            h1 { font-size: 1.2rem; }
+            .logo { width: 50px; height: 50px; font-size: 24px;}
+            .card-body { height: 300px; }
+            .stats-container { grid-template-columns: 1fr; height: auto; }
+            th:nth-child(4), td:nth-child(4) { display: none; }
+        }
     </style>
 </head>
 <body>
@@ -256,6 +289,7 @@
             let hospitals = [];
             let userLocation = null;
             let map;
+            let legend;
             const hospitalMarkers = L.layerGroup();
 
             const UI = {
@@ -279,51 +313,33 @@
 
             const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6OX3acZw-8gzNb36iUGra5OI-7TQmhEeZTxpoyyPO1kdYNlycokRPa4FWf9pY6CRRRu9fl0SHhBVZ/pub?gid=0&single=true&output=csv";
 
-            // ***** هذا هو كود التشخيص المطلوب *****
             async function fetchData() {
                 try {
                     const response = await fetch(DATA_URL, { cache: 'no-store' });
                     if (!response.ok) throw new Error(`Network error: ${response.statusText}`);
                     const csvText = await response.text();
-                    
                     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
-                    
-                    // هذا السطر هو الأهم للتشخيص
-                    console.log("البيانات التي تم قراءتها من الملف:", results.data);
-
                     if (results.errors.length) throw new Error(`Parsing error: ${results.errors[0].message}`);
-
                     hospitals = results.data.map((row, i) => ({
-                        id: i,
-                        name: row['أسم المستشفى'] || 'N/A',
-                        city: row['المحافظة'] || 'N/A',
-                        supervisor: row['الجهة المشرفة'] || 'N/A',
-                        type: row['نوع المستشفى'] || 'N/A',
-                        beds: parseInt(row['عدد أسرة التنويم']) || 0,
-                        icu: parseInt(row['عدد اسرة العناية المركزة كبار']) || 0,
-                        lat: parseFloat(row['Latitude']),
-                        lng: parseFloat(row['Longitude']),
+                        id: i, name: row['أسم المستشفى'] || 'N/A', city: row['المحافظة'] || 'N/A',
+                        supervisor: row['الجهة المشرفة'] || 'N/A', type: row['نوع المستشفى'] || 'N/A',
+                        beds: parseInt(row['عدد أسرة التنويم']) || 0, icu: parseInt(row['عدد اسرة العناية المركزة كبار']) || 0,
+                        lat: parseFloat(row['Latitude']), lng: parseFloat(row['Longitude']),
                         googleMaps: row['موقع المنشأة في قوقل ماب']
                     })).filter(h => h.lat && h.lng && h.name !== 'N/A');
-                    
-                    // طباعة البيانات بعد معالجتها
-                    console.log("البيانات بعد المعالجة والفلترة:", hospitals);
-
-                    if (hospitals.length === 0) {
-                         UI.loaderText.textContent = "تم تحميل الملف بنجاح، ولكن لا توجد بيانات صالحة للعرض. يرجى مراجعة عناوين الأعمدة والإحداثيات.";
-                         return; // إيقاف التنفيذ هنا
-                    }
-
+                    if (hospitals.length === 0) throw new Error("No valid data found in the sheet.");
                     initializeApp();
                     showNotification(`تم تحميل ${hospitals.length} مستشفى بنجاح`, 'success');
                 } catch (error) {
                     console.error("Fetch Data Error:", error);
                     UI.loaderText.textContent = `❌ فشل تحميل البيانات: ${error.message}`;
+                    showNotification("فشل في جلب البيانات. تحقق من الرابط وإعدادات النشر.", 'error');
                 }
             }
 
             function initializeApp() {
                 initMap();
+                addMapLegend();
                 populateFilters();
                 updateStats();
                 renderTable(hospitals);
@@ -338,6 +354,43 @@
                 hospitalMarkers.addTo(map);
             }
 
+            function getMarkerStyle(hospitalType) {
+                switch (hospitalType) {
+                    case 'عام': return { color: '#007bff', icon: 'fa-hospital' };
+                    case 'متخصصة': return { color: '#dc3545', icon: 'fa-heart-pulse' };
+                    case 'مركزية': return { color: '#28a745', icon: 'fa-star-of-life' };
+                    case 'خاص': return { color: '#ffc107', icon: 'fa-clinic-medical' };
+                    default: return { color: '#6c757d', icon: 'fa-h-square' };
+                }
+            }
+
+            function renderMapMarkers(data) {
+                hospitalMarkers.clearLayers();
+                data.forEach(h => {
+                    const style = getMarkerStyle(h.type);
+                    const icon = L.divIcon({
+                        className: 'leaflet-div-icon',
+                        html: `<div class="map-marker" style="background-color: ${style.color};"><i class="fas ${style.icon}"></i></div>`,
+                        iconSize: [30, 42], iconAnchor: [15, 42]
+                    });
+                    const marker = L.marker([h.lat, h.lng], { icon: icon }).bindPopup(`<b>${h.name}</b><br>${h.type}`);
+                    hospitalMarkers.addLayer(marker);
+                });
+            }
+
+            function addMapLegend() {
+                if (legend) map.removeControl(legend);
+                legend = L.control({ position: 'bottomright' });
+                legend.onAdd = function (map) {
+                    const div = L.DomUtil.create('div', 'legend');
+                    const types = {'عام': getMarkerStyle('عام'), 'متخصصة': getMarkerStyle('متخصصة'), 'مركزية': getMarkerStyle('مركزية'), 'خاص': getMarkerStyle('خاص'), 'أخرى': getMarkerStyle('default')};
+                    div.innerHTML += '<h4>أنواع المستشفيات</h4>';
+                    for (let key in types) { div.innerHTML += `<i style="background: ${types[key].color}"></i> ${key}<br>`; }
+                    return div;
+                };
+                legend.addTo(map);
+            }
+
             function populateFilters() {
                 const types = [...new Set(hospitals.map(h => h.type))];
                 const supervisors = [...new Set(hospitals.map(h => h.supervisor))];
@@ -349,12 +402,13 @@
                 UI.tableBody.innerHTML = '';
                 if (!data.length) {
                     UI.tableBody.innerHTML = '<tr><td colspan="9" style="text-align:center;">لا توجد نتائج مطابقة</td></tr>';
+                    renderMapMarkers([]);
                     return;
                 }
                 const rows = data.map((h, i) => `
                     <tr>
-                        <td>${i + 1}</td><td>${h.name}</td><td>${h.city}</td><td>${h.type}</td>
-                        <td>${h.supervisor}</td><td>${h.beds}</td><td>${h.icu}</td>
+                        <td>${i + 1}</td><td>${h.name}</td><td>${h.city}</td><td class="col-type">${h.type}</td><td class="col-supervisor">${h.supervisor}</td>
+                        <td>${h.beds}</td><td class="col-icu">${h.icu}</td>
                         <td>${h.distance ? `${h.distance} كم` : '--'}</td>
                         <td><button class="details-btn" data-id="${h.id}"><i class="fas fa-info-circle"></i></button></td>
                     </tr>`).join('');
@@ -362,22 +416,11 @@
                 renderMapMarkers(data);
             }
             
-            function renderMapMarkers(data) {
-                hospitalMarkers.clearLayers();
-                data.forEach(h => {
-                    const marker = L.marker([h.lat, h.lng]).bindPopup(`<b>${h.name}</b>`);
-                    hospitalMarkers.addLayer(marker);
-                });
-            }
-
             function updateStats() {
                 const stats = {
-                    total: hospitals.length,
-                    beds: hospitals.reduce((sum, h) => sum + h.beds, 0),
-                    icu: hospitals.reduce((sum, h) => sum + h.icu, 0),
-                    private: hospitals.filter(h => h.supervisor === "القطاع الخاص").length,
-                    general: hospitals.filter(h => h.type === "عام").length,
-                    specialized: hospitals.filter(h => h.type === "متخصصة" || h.type === "مركزية").length,
+                    total: hospitals.length, beds: hospitals.reduce((sum, h) => sum + h.beds, 0),
+                    icu: hospitals.reduce((sum, h) => sum + h.icu, 0), private: hospitals.filter(h => h.supervisor === "القطاع الخاص").length,
+                    general: hospitals.filter(h => h.type === "عام").length, specialized: hospitals.filter(h => h.type === "متخصصة" || h.type === "مركزية").length,
                 };
                 document.querySelector('#total-hospitals .stat-number').textContent = stats.total;
                 document.querySelector('#total-beds .stat-number').textContent = stats.beds.toLocaleString();
@@ -408,7 +451,14 @@
                 hospitals.sort((a, b) => a.distance - b.distance);
                 filterAndRender();
                 if (closest.hospital) {
-                    UI.closestHospital.innerHTML = `<div><strong>الاسم:</strong> ${closest.hospital.name}</div><div><strong>المسافة:</strong> ${closest.dist} كم</div>`;
+                    UI.closestHospital.innerHTML = `
+                        <div class="info-item"><strong>الاسم:</strong> ${closest.hospital.name}</div>
+                        <div class="info-item"><strong>النوع:</strong> ${closest.hospital.type} - ${closest.hospital.city}</div>
+                        <div class="info-item"><strong>المسافة:</strong> ${closest.dist} كم</div>
+                        <a href="${closest.hospital.googleMaps}" target="_blank" class="action-btn" style="margin-top: 10px; width: 100%; justify-content: center;">
+                            <i class="fas fa-map-marked-alt"></i> الانتقال للموقع
+                        </a>
+                    `;
                 }
             }
 
@@ -423,8 +473,7 @@
                 const supervisor = UI.supervisorFilter.value;
                 const search = UI.searchInput.value.toLowerCase();
                 const filtered = hospitals.filter(h =>
-                    (type === '' || h.type === type) &&
-                    (supervisor === '' || h.supervisor === supervisor) &&
+                    (type === '' || h.type === type) && (supervisor === '' || h.supervisor === supervisor) &&
                     (h.name.toLowerCase().includes(search) || h.city.toLowerCase().includes(search))
                 );
                 renderTable(filtered);
@@ -434,13 +483,28 @@
                 const h = hospitals.find(h => h.id === id);
                 if (!h) return;
                 UI.modalTitle.textContent = h.name;
+                const directionsUrl = userLocation ? `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${h.lat},${h.lng}` : h.googleMaps;
+
                 UI.modalBody.innerHTML = `
-                    <div class="detail-item"><span class="detail-label">المحافظة:</span> <span class="detail-value">${h.city}</span></div>
-                    <div class="detail-item"><span class="detail-label">الجهة المشرفة:</span> <span class="detail-value">${h.supervisor}</span></div>
-                    <div class="detail-item"><span class="detail-label">عدد الأسرة:</span> <span class="detail-value">${h.beds}</span></div>
-                    <div class="detail-item"><span class="detail-label">أسرة العناية:</span> <span class="detail-value">${h.icu}</span></div>
-                    ${h.distance ? `<div class="detail-item"><span class="detail-label">المسافة:</span> <span class="detail-value">${h.distance} كم</span></div>` : ''}
-                    ${h.googleMaps ? `<div class="action-buttons"><a href="${h.googleMaps}" target="_blank" class="action-btn btn-primary"><i class="fas fa-map-marked-alt"></i> عرض على الخريطة</a></div>` : ''}
+                    <div class="detail-group">
+                        <div class="detail-group-title">معلومات عامة</div>
+                        <div class="detail-item"><i class="fas fa-city detail-item-icon"></i><span class="detail-label">المحافظة:</span> ${h.city}</div>
+                        <div class="detail-item"><i class="fas fa-sitemap detail-item-icon"></i><span class="detail-label">النوع:</span> ${h.type}</div>
+                        <div class="detail-item"><i class="fas fa-building-user detail-item-icon"></i><span class="detail-label">الجهة المشرفة:</span> ${h.supervisor}</div>
+                    </div>
+                    <div class="detail-group">
+                        <div class="detail-group-title">السعة السريرية</div>
+                        <div class="detail-item"><i class="fas fa-bed-pulse detail-item-icon"></i><span class="detail-label">عدد الأسرة:</span> ${h.beds}</div>
+                        <div class="detail-item"><i class="fas fa-procedures detail-item-icon"></i><span class="detail-label">أسرة العناية:</span> ${h.icu}</div>
+                    </div>
+                     ${h.distance ? `<div class="detail-group">
+                        <div class="detail-group-title">المسافة</div>
+                        <div class="detail-item"><i class="fas fa-route detail-item-icon"></i><span class="detail-label">المسافة منك:</span> ${h.distance} كم</div>
+                    </div>` : ''}
+                    <div class="action-buttons">
+                        <a href="${h.googleMaps}" target="_blank" class="action-btn btn-primary"><i class="fas fa-map-marked-alt"></i> عرض على الخريطة</a>
+                        <a href="${directionsUrl}" target="_blank" class="action-btn btn-secondary"><i class="fas fa-directions"></i> اتجاهات السير</a>
+                    </div>
                 `;
                 UI.modal.style.display = 'flex';
             }
