@@ -28,17 +28,13 @@
             min-height: 100vh;
             padding: 15px;
             line-height: 1.6;
+            overflow-x: hidden;
         }
         .container { max-width: 1400px; margin: 0 auto; }
         header {
             background: linear-gradient(135deg, var(--moh-green), var(--moh-dark-green));
-            color: var(--moh-white);
-            padding: 20px;
-            border-radius: 12px;
-            margin-bottom: 25px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
-            text-align: center;
-            animation: fadeIn 1s ease;
+            color: var(--moh-white); padding: 20px; border-radius: 12px;
+            margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15); text-align: center;
         }
         .logo-container { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; }
         .logo {
@@ -52,16 +48,23 @@
             50% { transform: scale(1.05); }
             100% { transform: scale(1); }
         }
-        h1 { font-size: 1.8rem; margin-bottom: 10px; }
-        p.subtitle { font-size: 1rem; opacity: 0.9; max-width: 800px; margin: 0 auto; }
+        h1 { font-size: 1.8rem; margin-bottom: 10px; animation: slideDownFadeIn 0.6s ease-out 0.3s backwards; }
+        p.subtitle { font-size: 1rem; opacity: 0.9; max-width: 800px; margin: 0 auto; animation: slideDownFadeIn 0.6s ease-out 0.5s backwards; }
+        .animate-on-scroll {
+            opacity: 0;
+            transform: translateY(30px);
+            transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+        }
+        .animate-on-scroll.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
         .dashboard { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 25px; }
         .card {
             background: var(--moh-white); border-radius: 12px; overflow: hidden;
             box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
             transition: transform 0.3s ease, box-shadow 0.3s ease;
-            opacity: 0; transform: translateY(20px);
         }
-        .card.visible { opacity: 1; transform: translateY(0); }
         .card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15); }
         .card-header {
             background: linear-gradient(135deg, var(--moh-green), var(--moh-dark-green));
@@ -71,7 +74,14 @@
         .card-body { padding: 20px; height: 400px; }
         .map-container { height: 100%; position: relative; }
         #hospitals-map { width: 100%; height: 100%; border-radius: 8px; z-index: 1; }
-        .stats-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; height: 280px; overflow-y: auto; padding: 5px; }
+        .stats-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            height: 100%;
+            overflow-y: auto;
+            padding: 5px;
+        }
         .stat-card {
             background: linear-gradient(135deg, var(--moh-green), var(--moh-dark-green));
             color: var(--moh-white); padding: 15px; border-radius: 8px; text-align: center;
@@ -84,6 +94,11 @@
             font-size: 1.8rem; margin-bottom: 8px; background: rgba(255, 255, 255, 0.2);
             width: 50px; height: 50px; border-radius: 50%; display: flex;
             align-items: center; justify-content: center;
+            transition: transform 0.3s ease-out;
+        }
+        .stat-card:hover .stat-icon {
+            transform: rotate(15deg) scale(1.1);
+            transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
         .stat-number { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; min-height: 30px; }
         .stat-label { font-size: 0.85rem; opacity: 0.9; }
@@ -94,8 +109,13 @@
             align-items: center; gap: 8px; font-size: 0.9rem; text-decoration: none;
         }
         button:hover, .action-btn:hover { background: var(--moh-dark-green); transform: translateY(-2px); }
-        .data-section { margin-top: 25px; animation: fadeIn 1.5s ease; }
+        button:active, .action-btn:active {
+            transform: translateY(0) scale(0.98);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+        }
+        .data-section { margin-top: 25px; }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDownFadeIn { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
         .filters { display: flex; gap: 12px; margin-bottom: 20px; flex-wrap: wrap; }
         select, input {
             padding: 10px 12px; border-radius: 6px; border: 1px solid #ddd;
@@ -111,7 +131,15 @@
             color: var(--moh-white); font-weight: bold; position: sticky; top: 0; z-index: 2;
         }
         tr:hover { background-color: var(--moh-light-green); }
-        footer { text-align: center; padding: 20px; margin-top: 40px; color: var(--moh-green); font-size: 0.9rem; }
+        tbody tr {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+        }
+        tbody tr.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
         .modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0, 0, 0, 0.6); z-index: 1000; justify-content: center; align-items: center;
@@ -122,6 +150,8 @@
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); animation: scaleIn 0.4s ease-out;
         }
         @keyframes scaleIn { from { transform: scale(0.8) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
+        .modal.closing .modal-content { animation: scaleOut 0.3s ease-in forwards; }
+        @keyframes scaleOut { from { transform: scale(1); opacity: 1; } to { transform: scale(0.8); opacity: 0; } }
         .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee; }
         .modal-title { font-size: 1.5rem; color: var(--moh-dark-green); font-weight: 600; }
         .close-btn { background: #f1f1f1; border: none; font-size: 1.2rem; cursor: pointer; color: #555; width: 30px; height: 30px; border-radius: 50%; transition: all 0.3s; }
@@ -134,64 +164,40 @@
         .action-buttons { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
         .btn-primary { background-color: var(--moh-green); }
         .btn-secondary { background-color: var(--moh-gold); color: var(--moh-dark-green); }
-        .loading {
-            width: 24px; height: 24px; border: 3px solid rgba(0, 126, 58, 0.3);
-            border-radius: 50%; border-top-color: var(--moh-green);
-            animation: spin 1s ease-in-out infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        .notification {
-            position: fixed; bottom: 20px; right: 20px; padding: 15px 20px;
-            background-color: var(--moh-green); color: white; border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transform: translateY(120%);
-            opacity: 0; transition: transform 0.4s, opacity 0.4s; z-index: 2000;
-        }
-        .notification.show { transform: translateY(0); opacity: 1; }
         .user-location-section { background-color: var(--moh-white); border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
         .user-location-header { display: flex; align-items: center; gap: 10px; margin-bottom: 15px; color: var(--moh-green); }
         .user-location-content { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .location-info, .closest-hospital-info { padding: 15px; background-color: var(--moh-light-green); border-radius: 8px; }
         #closest-hospital-data .info-item { margin-bottom: 8px; }
+        .loading { width: 24px; height: 24px; border: 3px solid rgba(0, 126, 58, 0.3); border-radius: 50%; border-top-color: var(--moh-green); animation: spin 1s ease-in-out infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
         .loader { display: flex; justify-content: center; align-items: center; height: 200px; flex-direction: column; gap: 15px; }
         .loader-text { color: var(--moh-green); font-weight: bold; }
-        .back-to-top {
-            position: fixed; bottom: 30px; left: 30px; width: 50px; height: 50px;
-            background-color: var(--moh-green); color: white; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center; font-size: 20px;
-            cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease;
-            z-index: 999; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        }
+        .notification { position: fixed; bottom: 20px; right: 20px; padding: 15px 20px; background-color: var(--moh-green); color: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); transform: translateY(120%); opacity: 0; transition: transform 0.4s, opacity 0.4s; z-index: 2000; }
+        .notification.show { transform: translateY(0); opacity: 1; }
+        .back-to-top { position: fixed; bottom: 30px; left: 30px; width: 50px; height: 50px; background-color: var(--moh-green); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; opacity: 0; visibility: hidden; transition: all 0.3s ease; z-index: 999; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
         .back-to-top.visible { opacity: 1; visibility: visible; }
+        footer { text-align: center; padding: 20px; margin-top: 40px; color: var(--moh-green); font-size: 0.9rem; }
         .leaflet-div-icon { border: none; background-color: transparent; }
-        .map-marker {
-            width: 30px; height: 30px; border-radius: 50% 50% 50% 0;
-            transform: rotate(-45deg); display: flex; align-items: center; justify-content: center;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 2px solid white;
-        }
+        .map-marker { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 2px solid white; }
         .map-marker i { transform: rotate(45deg); font-size: 14px; color: white; }
-        .legend {
-            padding: 10px; background: white; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-            line-height: 1.5; font-size: 12px;
-        }
+        .legend { padding: 10px; background: white; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4); line-height: 1.5; font-size: 12px; }
         .legend i { width: 18px; height: 18px; float: right; margin-left: 8px; border-radius: 50%; }
-        
-        @media (max-width: 992px) {
-            .dashboard { grid-template-columns: 1fr; }
-            h1 { font-size: 1.5rem; }
-        }
+        @media (max-width: 992px) { .dashboard { grid-template-columns: 1fr; } h1 { font-size: 1.5rem; } }
         @media (max-width: 768px) {
             body { padding: 10px; }
             .user-location-content { grid-template-columns: 1fr; }
             .filters { flex-direction: column; }
             .card-body { height: 350px; }
-            th:nth-child(5), td:nth-child(5), th:nth-child(7), td:nth-child(7) { display: none; }
+            th:nth-child(7), td:nth-child(7) { display: none; }
         }
         @media (max-width: 480px) {
             h1 { font-size: 1.2rem; }
             .logo { width: 50px; height: 50px; font-size: 24px;}
             .card-body { height: 300px; }
             .stats-container { grid-template-columns: 1fr; height: auto; }
-            th:nth-child(4), td:nth-child(4) { display: none; }
+            th:nth-child(4), td:nth-child(4),
+            th:nth-child(5), td:nth-child(5) { display: none; }
         }
     </style>
 </head>
@@ -207,7 +213,7 @@
             </div>
         </header>
 
-        <div class="user-location-section">
+        <div class="user-location-section animate-on-scroll">
             <div class="user-location-header"><i class="fas fa-map-marker-alt"></i><h2>الموقع الحالي وأقرب مستشفى</h2></div>
             <div class="user-location-content">
                 <div class="location-info">
@@ -215,7 +221,7 @@
                     <div>خط العرض: <span id="current-lat">--</span></div>
                     <div>خط الطول: <span id="current-lng">--</span></div>
                     <div>الدقة: <span id="current-accuracy">--</span></div>
-                    <button id="get-location-btn"><i class="fas fa-location-crosshairs"></i> تحديث الموقع</button>
+                    <button id="get-location-btn" style="margin-top:10px;"><i class="fas fa-location-crosshairs"></i> تحديث الموقع</button>
                 </div>
                 <div class="closest-hospital-info">
                     <h3><i class="fas fa-hospital"></i> أقرب مستشفى إليك</h3>
@@ -225,11 +231,11 @@
         </div>
 
         <div class="dashboard">
-            <div class="card">
+            <div class="card animate-on-scroll">
                 <div class="card-header"><i class="fas fa-map-marked-alt"></i><span>الخريطة التفاعلية</span></div>
                 <div class="card-body"><div id="hospitals-map"></div></div>
             </div>
-            <div class="card">
+            <div class="card animate-on-scroll">
                 <div class="card-header"><i class="fas fa-chart-bar"></i><span>إحصائيات عامة</span></div>
                 <div class="card-body">
                     <div class="stats-container">
@@ -237,14 +243,14 @@
                         <div class="stat-card" id="total-beds"><div class="stat-icon"><i class="fas fa-bed"></i></div><div class="stat-number">0</div><div class="stat-label">إجمالي الأسرة</div></div>
                         <div class="stat-card" id="total-icu"><div class="stat-icon"><i class="fas fa-procedures"></i></div><div class="stat-number">0</div><div class="stat-label">أسرة العناية المركزة</div></div>
                         <div class="stat-card" id="private-hospitals"><div class="stat-icon"><i class="fas fa-stethoscope"></i></div><div class="stat-number">0</div><div class="stat-label">مستشفى خاص</div></div>
-                        <div class="stat-card" id="general-hospitals"><div class="stat-icon"><i class="fas fa-clinic-medical"></i></div><div class="stat-number">0</div><div class="stat-label">مستشفى عام</div></div>
-                        <div class="stat-card" id="specialized-hospitals"><div class="stat-icon"><i class="fas fa-heartbeat"></i></div><div class="stat-number">0</div><div class="stat-label">مستشفى متخصص</div></div>
+                        <div class="stat-card" id="general-hospitals"><div class="stat-icon"><i class="fas fa-clinic-medical"></i></div><div class="stat-number">0</div><div class="stat-label">مستشفيات عامة</div></div>
+                        <div class="stat-card" id="specialized-hospitals"><div class="stat-icon"><i class="fas fa-heartbeat"></i></div><div class="stat-number">0</div><div class="stat-label">مستشفيات متخصصة</div></div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="data-section">
+        <div class="data-section animate-on-scroll">
             <div class="filters">
                 <select id="filter-type"><option value="">جميع الأنواع</option></select>
                 <select id="filter-supervisor"><option value="">جميع الجهات المشرفة</option></select>
@@ -322,7 +328,7 @@
                     if (results.errors.length) throw new Error(`Parsing error: ${results.errors[0].message}`);
                     hospitals = results.data.map((row, i) => ({
                         id: i, name: row['أسم المستشفى'] || 'N/A', city: row['المحافظة'] || 'N/A',
-                        supervisor: row['الجهة المشرفة'] || 'N/A', type: row['نوع المستشفى'] || 'N/A',
+                        supervisor: row['الجهة المشرفة'] || 'N/A', type: (row['نوع المستشفى'] || 'N/A').trim(),
                         beds: parseInt(row['عدد أسرة التنويم']) || 0, icu: parseInt(row['عدد اسرة العناية المركزة كبار']) || 0,
                         lat: parseFloat(row['Latitude']), lng: parseFloat(row['Longitude']),
                         googleMaps: row['موقع المنشأة في قوقل ماب']
@@ -345,7 +351,16 @@
                 renderTable(hospitals);
                 getUserLocation();
                 addEventListeners();
-                document.querySelectorAll('.card').forEach((card, i) => setTimeout(() => card.classList.add('visible'), 100 * i));
+                
+                const observer = new IntersectionObserver((entries) => {
+                    entries.forEach(entry => {
+                        if (entry.isIntersecting) {
+                            entry.target.classList.add('visible');
+                            observer.unobserve(entry.target);
+                        }
+                    });
+                }, { threshold: 0.1 });
+                document.querySelectorAll('.animate-on-scroll').forEach(el => observer.observe(el));
             }
 
             function initMap() {
@@ -354,12 +369,13 @@
                 hospitalMarkers.addTo(map);
             }
 
+            // --- MODIFIED: Matched cases with the exact text from the Excel sheet ---
             function getMarkerStyle(hospitalType) {
                 switch (hospitalType) {
-                    case 'عام': return { color: '#007bff', icon: 'fa-hospital' };
-                    case 'متخصصة': return { color: '#dc3545', icon: 'fa-heart-pulse' };
-                    case 'مركزية': return { color: '#28a745', icon: 'fa-star-of-life' };
-                    case 'خاص': return { color: '#ffc107', icon: 'fa-clinic-medical' };
+                    case 'مستشفيات عامة': return { color: '#007bff', icon: 'fa-hospital' };
+                    case 'مستشفيات متخصصة': return { color: '#dc3545', icon: 'fa-heart-pulse' };
+                    case 'مستشفيات مركزية': return { color: '#28a745', icon: 'fa-star-of-life' };
+                    case 'مستشفى خاص': return { color: '#ffc107', icon: 'fa-clinic-medical' };
                     default: return { color: '#6c757d', icon: 'fa-h-square' };
                 }
             }
@@ -378,12 +394,19 @@
                 });
             }
 
+            // --- MODIFIED: Matched legend with the exact text from the Excel sheet ---
             function addMapLegend() {
                 if (legend) map.removeControl(legend);
                 legend = L.control({ position: 'bottomright' });
                 legend.onAdd = function (map) {
                     const div = L.DomUtil.create('div', 'legend');
-                    const types = {'عام': getMarkerStyle('عام'), 'متخصصة': getMarkerStyle('متخصصة'), 'مركزية': getMarkerStyle('مركزية'), 'خاص': getMarkerStyle('خاص'), 'أخرى': getMarkerStyle('default')};
+                    const types = {
+                        'مستشفيات عامة': getMarkerStyle('مستشفيات عامة'),
+                        'مستشفيات متخصصة': getMarkerStyle('مستشفيات متخصصة'),
+                        'مستشفيات مركزية': getMarkerStyle('مستشفيات مركزية'),
+                        'مستشفى خاص': getMarkerStyle('مستشفى خاص'),
+                        'أخرى': getMarkerStyle('default')
+                    };
                     div.innerHTML += '<h4>أنواع المستشفيات</h4>';
                     for (let key in types) { div.innerHTML += `<i style="background: ${types[key].color}"></i> ${key}<br>`; }
                     return div;
@@ -405,29 +428,63 @@
                     renderMapMarkers([]);
                     return;
                 }
-                const rows = data.map((h, i) => `
+                const rowsHTML = data.map((h, i) => `
                     <tr>
                         <td>${i + 1}</td><td>${h.name}</td><td>${h.city}</td><td class="col-type">${h.type}</td><td class="col-supervisor">${h.supervisor}</td>
                         <td>${h.beds}</td><td class="col-icu">${h.icu}</td>
                         <td>${h.distance ? `${h.distance} كم` : '--'}</td>
                         <td><button class="details-btn" data-id="${h.id}"><i class="fas fa-info-circle"></i></button></td>
                     </tr>`).join('');
-                UI.tableBody.innerHTML = rows;
+                UI.tableBody.innerHTML = rowsHTML;
+                
+                const rows = UI.tableBody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    setTimeout(() => {
+                        row.classList.add('visible');
+                    }, index * 40);
+                });
+                
                 renderMapMarkers(data);
             }
             
+            function animateCounter(el, end, duration = 1500) {
+                let start = 0;
+                const range = end - start;
+                if (range === 0) {
+                    el.textContent = end.toLocaleString();
+                    return;
+                }
+                let startTime = null;
+                function step(timestamp) {
+                    if (!startTime) startTime = timestamp;
+                    const progress = Math.min((timestamp - startTime) / duration, 1);
+                    const current = Math.floor(progress * range + start);
+                    el.textContent = current.toLocaleString();
+                    if (progress < 1) {
+                        window.requestAnimationFrame(step);
+                    } else {
+                         el.textContent = end.toLocaleString();
+                    }
+                }
+                window.requestAnimationFrame(step);
+            }
+
             function updateStats() {
                 const stats = {
-                    total: hospitals.length, beds: hospitals.reduce((sum, h) => sum + h.beds, 0),
-                    icu: hospitals.reduce((sum, h) => sum + h.icu, 0), private: hospitals.filter(h => h.supervisor === "القطاع الخاص").length,
-                    general: hospitals.filter(h => h.type === "عام").length, specialized: hospitals.filter(h => h.type === "متخصصة" || h.type === "مركزية").length,
+                    total: hospitals.length,
+                    beds: hospitals.reduce((sum, h) => sum + h.beds, 0),
+                    icu: hospitals.reduce((sum, h) => sum + h.icu, 0),
+                    private: hospitals.filter(h => h.type === "مستشفى خاص").length,
+                    general: hospitals.filter(h => h.type === "مستشفيات عامة").length,
+                    specialized: hospitals.filter(h => h.type === "مستشفيات متخصصة").length,
                 };
-                document.querySelector('#total-hospitals .stat-number').textContent = stats.total;
-                document.querySelector('#total-beds .stat-number').textContent = stats.beds.toLocaleString();
-                document.querySelector('#total-icu .stat-number').textContent = stats.icu.toLocaleString();
-                document.querySelector('#private-hospitals .stat-number').textContent = stats.private;
-                document.querySelector('#general-hospitals .stat-number').textContent = stats.general;
-                document.querySelector('#specialized-hospitals .stat-number').textContent = stats.specialized;
+                
+                animateCounter(document.querySelector('#total-hospitals .stat-number'), stats.total);
+                animateCounter(document.querySelector('#total-beds .stat-number'), stats.beds);
+                animateCounter(document.querySelector('#total-icu .stat-number'), stats.icu);
+                animateCounter(document.querySelector('#private-hospitals .stat-number'), stats.private);
+                animateCounter(document.querySelector('#general-hospitals .stat-number'), stats.general);
+                animateCounter(document.querySelector('#specialized-hospitals .stat-number'), stats.specialized);
             }
 
             function getUserLocation() {
@@ -484,7 +541,6 @@
                 if (!h) return;
                 UI.modalTitle.textContent = h.name;
                 const directionsUrl = userLocation ? `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${h.lat},${h.lng}` : h.googleMaps;
-
                 UI.modalBody.innerHTML = `
                     <div class="detail-group">
                         <div class="detail-group-title">معلومات عامة</div>
@@ -497,7 +553,7 @@
                         <div class="detail-item"><i class="fas fa-bed-pulse detail-item-icon"></i><span class="detail-label">عدد الأسرة:</span> ${h.beds}</div>
                         <div class="detail-item"><i class="fas fa-procedures detail-item-icon"></i><span class="detail-label">أسرة العناية:</span> ${h.icu}</div>
                     </div>
-                     ${h.distance ? `<div class="detail-group">
+                    ${h.distance ? `<div class="detail-group">
                         <div class="detail-group-title">المسافة</div>
                         <div class="detail-item"><i class="fas fa-route detail-item-icon"></i><span class="detail-label">المسافة منك:</span> ${h.distance} كم</div>
                     </div>` : ''}
@@ -506,7 +562,16 @@
                         <a href="${directionsUrl}" target="_blank" class="action-btn btn-secondary"><i class="fas fa-directions"></i> اتجاهات السير</a>
                     </div>
                 `;
+                UI.modal.classList.remove('closing');
                 UI.modal.style.display = 'flex';
+            }
+            
+            function closeModal() {
+                UI.modal.classList.add('closing');
+                UI.modal.addEventListener('animationend', () => {
+                    UI.modal.style.display = 'none';
+                    UI.modal.classList.remove('closing');
+                }, { once: true });
             }
 
             function showNotification(message, type = 'success') {
@@ -521,12 +586,18 @@
                 UI.supervisorFilter.addEventListener('change', filterAndRender);
                 UI.searchInput.addEventListener('input', filterAndRender);
                 document.getElementById('get-location-btn').addEventListener('click', getUserLocation);
-                UI.modal.addEventListener('click', e => { if (e.target === UI.modal || e.target.id === 'close-modal' || e.target.closest('.close-btn')) UI.modal.style.display = 'none'; });
+                
+                UI.modal.addEventListener('click', e => { 
+                    if (e.target === UI.modal || e.target.id === 'close-modal' || e.target.closest('.close-btn')) {
+                        closeModal();
+                    }
+                });
+                
                 UI.tableBody.addEventListener('click', e => {
                     const btn = e.target.closest('.details-btn');
                     if (btn) showDetails(parseInt(btn.dataset.id));
                 });
-                window.addEventListener('scroll', () => UI.backToTop.classList.toggle('visible', window.pageYOffset > 300));
+                window.addEventListener('scroll', () => UI.backToTop.classList.toggle('visible', window.scrollY > 300));
                 UI.backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
             }
 
