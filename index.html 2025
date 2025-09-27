@@ -227,8 +227,8 @@
                     <h3><i class="fas fa-hospital"></i> مستشفى عسير المركزي</h3>
                     <div id="asir-hospital-info">
                         <div class="info-item"><strong>الموقع:</strong> أبها</div>
-                        <div class="info-item"><strong>خط العرض:</strong> ${18.219711}</div>
-                        <div class="info-item"><strong>خط الطول:</strong> ${42.502859}</div>
+                        <div class="info-item"><strong>خط العرض:</strong> ${18.2195}</div>
+                        <div class="info-item"><strong>خط الطول:</strong> ${42.535}</div>
                     </div>
                 </div>
             </div>
@@ -301,8 +301,8 @@
         document.addEventListener('DOMContentLoaded', () => {
             let hospitals = [];
             const ASIR_CENTRAL_HOSPITAL = {
-                lat: 18.219711, 
-                lng: 42.502859, 
+                lat: 18.2195, 
+                lng: 42.535, 
                 name: "مستشفى عسير المركزي"
             };
             let map;
@@ -622,8 +622,10 @@
                 for (const key in hospital) {
                     if (!allKnownKeys.includes(key) && !excludedKeys.includes(key)) {
                         const value = hospital[key];
-                        // Check if value is not empty and is a string before trimming
-                        if (value !== null && value !== undefined && String(value).trim() !== '') {
+                        // Convert to string and trim to handle numbers/empty cells
+                        const trimmedValue = (value !== null && value !== undefined) ? String(value).trim() : '';
+
+                        if (trimmedValue !== '') {
                             categorizedKeys['بيانات إضافية'].push(key);
                             iconMap[key] = 'fa-circle-info';
                         }
