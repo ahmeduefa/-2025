@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>نظام إدارة المستشفيات - تجمع عسير الصحي</title>
+    <title>القطاعات الصحية التابعة لفرع وزارة الصحة بمنطقة عسير</title>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -157,7 +157,7 @@
         .close-btn { background: #f1f1f1; border: none; font-size: 1.2rem; cursor: pointer; color: #555; width: 30px; height: 30px; border-radius: 50%; transition: all 0.3s; }
         .close-btn:hover { background: #e0e0e0; color: black; }
         .detail-group { margin-bottom: 20px; }
-        .detail-group-title { font-weight: bold; color: var(--moh-green); margin-bottom: 12px; border-bottom: 2px solid var(--moh-light-green); padding-bottom: 5px; }
+        .detail-group-title { font-weight: bold; color: var(--moh-green); margin-bottom: 12px; border-bottom: 2px solid var(--moh-light-green); padding-bottom: 5px; font-size: 1.1rem; }
         .detail-item { margin-bottom: 12px; display: flex; align-items: center; font-size: 1rem; }
         .detail-item-icon { color: var(--moh-green); min-width: 30px; font-size: 1.1rem; }
         .detail-label { font-weight: bold; color: #555; margin-left: 5px; }
@@ -207,14 +207,14 @@
             <div class="logo-container">
                 <div class="logo"><i class="fas fa-hospital"></i></div>
                 <div>
-                    <h1>نظام إدارة المستشفيات - تجمع عسير الصحي</h1>
+                    <h1>القطاعات الصحية التابعة لفرع وزارة الصحة بمنطقة عسير</h1>
                     <p class="subtitle">منصة متكاملة لعرض بيانات المستشفيات والمراكز الصحية في منطقة عسير</p>
                 </div>
             </div>
         </header>
 
         <div class="user-location-section animate-on-scroll">
-            <div class="user-location-header"><i class="fas fa-map-marker-alt"></i><h2>الموقع الحالي وأقرب مستشفى</h2></div>
+            <div class="user-location-header"><i class="fas fa-map-marker-alt"></i><h2>الموقع الحالي</h2></div>
             <div class="user-location-content">
                 <div class="location-info">
                     <h3><i class="fas fa-location-dot"></i> موقعك الحالي</h3>
@@ -224,8 +224,12 @@
                     <button id="get-location-btn" style="margin-top:10px;"><i class="fas fa-location-crosshairs"></i> تحديث الموقع</button>
                 </div>
                 <div class="closest-hospital-info">
-                    <h3><i class="fas fa-hospital"></i> أقرب مستشفى إليك</h3>
-                    <div id="closest-hospital-data">جاري تحميل البيانات...</div>
+                    <h3><i class="fas fa-hospital"></i> مستشفى عسير المركزي</h3>
+                    <div id="asir-hospital-info">
+                        <div class="info-item"><strong>الموقع:</strong> أبها</div>
+                        <div class="info-item"><strong>خط العرض:</strong> ${18.219711}</div>
+                        <div class="info-item"><strong>خط الطول:</strong> ${42.502859}</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -261,7 +265,7 @@
                     <thead>
                         <tr>
                             <th>#</th><th>اسم المستشفى</th><th>المحافظة</th><th>النوع</th><th>الجهة المشرفة</th>
-                            <th>عدد الأسرة</th><th>أسرة العناية</th><th>المسافة</th><th>التفاصيل</th>
+                            <th>عدد الأسرة</th><th>أسرة العناية</th><th>المسافة من عسير المركزي</th><th>التفاصيل</th>
                         </tr>
                     </thead>
                     <tbody id="hospitals-table">
@@ -283,6 +287,9 @@
                 <button class="close-btn" id="close-modal">×</button>
             </div>
             <div id="modal-content-body"></div>
+            <div class="action-buttons">
+                <button id="modal-google-maps-btn" class="action-btn btn-primary"><i class="fas fa-map-location-dot"></i> الانتقال للموقع على الخريطة</button>
+            </div>
         </div>
     </div>
 
@@ -293,10 +300,16 @@
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let hospitals = [];
-            let userLocation = null;
+            const ASIR_CENTRAL_HOSPITAL = {
+                lat: 18.219711, 
+                lng: 42.502859, 
+                name: "مستشفى عسير المركزي"
+            };
             let map;
             let legend;
+            let userMarker; 
             const hospitalMarkers = L.layerGroup();
+            let currentHospital = null;
 
             const UI = {
                 loaderText: document.querySelector('#hospitals-table .loader-text'),
@@ -305,20 +318,21 @@
                 lat: document.getElementById('current-lat'),
                 lng: document.getElementById('current-lng'),
                 accuracy: document.getElementById('current-accuracy'),
-                closestHospital: document.getElementById('closest-hospital-data'),
                 notification: document.getElementById('notification'),
                 notificationText: document.getElementById('notification-text'),
                 modal: document.getElementById('details-modal'),
                 modalTitle: document.getElementById('modal-hospital-name'),
                 modalBody: document.getElementById('modal-content-body'),
+                modalMapsBtn: document.getElementById('modal-google-maps-btn'),
                 typeFilter: document.getElementById('filter-type'),
                 supervisorFilter: document.getElementById('filter-supervisor'),
                 searchInput: document.getElementById('search-input'),
-                backToTop: document.getElementById('back-to-top')
+                backToTop: document.getElementById('back-to-top'),
+                getLocationBtn: document.getElementById('get-location-btn')
             };
 
             const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6OX3acZw-8gzNb36iUGra5OI-7TQmhEeZTxpoyyPO1kdYNlycokRPa4FWf9pY6CRRRu9fl0SHhBVZ/pub?gid=0&single=true&output=csv";
-
+            
             async function fetchData() {
                 try {
                     const response = await fetch(DATA_URL, { cache: 'no-store' });
@@ -326,13 +340,22 @@
                     const csvText = await response.text();
                     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                     if (results.errors.length) throw new Error(`Parsing error: ${results.errors[0].message}`);
-                    hospitals = results.data.map((row, i) => ({
-                        id: i, name: row['أسم المستشفى'] || 'N/A', city: row['المحافظة'] || 'N/A',
-                        supervisor: row['الجهة المشرفة'] || 'N/A', type: (row['نوع المستشفى'] || 'N/A').trim(),
-                        beds: parseInt(row['عدد أسرة التنويم']) || 0, icu: parseInt(row['عدد اسرة العناية المركزة كبار']) || 0,
-                        lat: parseFloat(row['Latitude']), lng: parseFloat(row['Longitude']),
-                        googleMaps: row['موقع المنشأة في قوقل ماب']
-                    })).filter(h => h.lat && h.lng && h.name !== 'N/A');
+                    
+                    const data = results.data.map((row, i) => {
+                        const parsedRow = {};
+                        for (const key in row) {
+                            parsedRow[key] = row[key];
+                        }
+                        parsedRow.id = i;
+                        parsedRow.lat = parseFloat(row['Latitude']);
+                        parsedRow.lng = parseFloat(row['Longitude']);
+                        if (parsedRow.lat && parsedRow.lng) {
+                            parsedRow.distanceFromAsir = haversine(parsedRow.lat, parsedRow.lng, ASIR_CENTRAL_HOSPITAL.lat, ASIR_CENTRAL_HOSPITAL.lng);
+                        }
+                        return parsedRow;
+                    });
+                    
+                    hospitals = data.filter(h => h.lat && h.lng && h['أسم المستشفى'] !== 'N/A' && h['أسم المستشفى']);
                     if (hospitals.length === 0) throw new Error("No valid data found in the sheet.");
                     initializeApp();
                     showNotification(`تم تحميل ${hospitals.length} مستشفى بنجاح`, 'success');
@@ -342,14 +365,13 @@
                     showNotification("فشل في جلب البيانات. تحقق من الرابط وإعدادات النشر.", 'error');
                 }
             }
-
+            
             function initializeApp() {
                 initMap();
                 addMapLegend();
                 populateFilters();
                 updateStats();
                 renderTable(hospitals);
-                getUserLocation();
                 addEventListeners();
                 
                 const observer = new IntersectionObserver((entries) => {
@@ -364,12 +386,21 @@
             }
 
             function initMap() {
-                map = L.map(UI.mapContainer).setView([18.5, 42.5], 8);
+                map = L.map(UI.mapContainer).setView([18.5, 42.5], 8); 
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
+                
+                const asirHospitalIcon = L.divIcon({
+                    className: 'leaflet-div-icon',
+                    html: `<div class="map-marker" style="background-color: #28a745;"><i class="fas fa-star-of-life"></i></div>`,
+                    iconSize: [30, 42], iconAnchor: [15, 42]
+                });
+                L.marker([ASIR_CENTRAL_HOSPITAL.lat, ASIR_CENTRAL_HOSPITAL.lng], { icon: asirHospitalIcon }).addTo(map)
+                    .bindPopup(`<b>${ASIR_CENTRAL_HOSPITAL.name}</b>`).openPopup();
+
                 hospitalMarkers.addTo(map);
+                renderMapMarkers(hospitals);
             }
 
-            // --- MODIFIED: Matched cases with the exact text from the Excel sheet ---
             function getMarkerStyle(hospitalType) {
                 switch (hospitalType) {
                     case 'مستشفيات عامة': return { color: '#007bff', icon: 'fa-hospital' };
@@ -383,18 +414,17 @@
             function renderMapMarkers(data) {
                 hospitalMarkers.clearLayers();
                 data.forEach(h => {
-                    const style = getMarkerStyle(h.type);
+                    const style = getMarkerStyle(h['نوع المستشفى']);
                     const icon = L.divIcon({
                         className: 'leaflet-div-icon',
                         html: `<div class="map-marker" style="background-color: ${style.color};"><i class="fas ${style.icon}"></i></div>`,
                         iconSize: [30, 42], iconAnchor: [15, 42]
                     });
-                    const marker = L.marker([h.lat, h.lng], { icon: icon }).bindPopup(`<b>${h.name}</b><br>${h.type}`);
+                    const marker = L.marker([h.lat, h.lng], { icon: icon }).bindPopup(`<b>${h['أسم المستشفى']}</b><br>${h['نوع المستشفى']}`);
                     hospitalMarkers.addLayer(marker);
                 });
             }
 
-            // --- MODIFIED: Matched legend with the exact text from the Excel sheet ---
             function addMapLegend() {
                 if (legend) map.removeControl(legend);
                 legend = L.control({ position: 'bottomright' });
@@ -415,8 +445,8 @@
             }
 
             function populateFilters() {
-                const types = [...new Set(hospitals.map(h => h.type))];
-                const supervisors = [...new Set(hospitals.map(h => h.supervisor))];
+                const types = [...new Set(hospitals.map(h => h['نوع المستشفى']))].filter(Boolean);
+                const supervisors = [...new Set(hospitals.map(h => h['الجهة المشرفة']))].filter(Boolean);
                 UI.typeFilter.innerHTML = '<option value="">جميع الأنواع</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
                 UI.supervisorFilter.innerHTML = '<option value="">جميع الجهات</option>' + supervisors.map(s => `<option value="${s}">${s}</option>`).join('');
             }
@@ -430,9 +460,14 @@
                 }
                 const rowsHTML = data.map((h, i) => `
                     <tr>
-                        <td>${i + 1}</td><td>${h.name}</td><td>${h.city}</td><td class="col-type">${h.type}</td><td class="col-supervisor">${h.supervisor}</td>
-                        <td>${h.beds}</td><td class="col-icu">${h.icu}</td>
-                        <td>${h.distance ? `${h.distance} كم` : '--'}</td>
+                        <td>${i + 1}</td>
+                        <td>${h['أسم المستشفى']}</td>
+                        <td>${h['المحافظة']}</td>
+                        <td>${h['نوع المستشفى']}</td>
+                        <td>${h['الجهة المشرفة']}</td>
+                        <td>${h['عدد أسرة التنويم'] || '--'}</td>
+                        <td>${h['عدد اسرة العناية المركزة كبار'] || '--'}</td>
+                        <td>${h.distanceFromAsir ? `${h.distanceFromAsir} كم` : '--'}</td>
                         <td><button class="details-btn" data-id="${h.id}"><i class="fas fa-info-circle"></i></button></td>
                     </tr>`).join('');
                 UI.tableBody.innerHTML = rowsHTML;
@@ -463,7 +498,7 @@
                     if (progress < 1) {
                         window.requestAnimationFrame(step);
                     } else {
-                         el.textContent = end.toLocaleString();
+                        el.textContent = end.toLocaleString();
                     }
                 }
                 window.requestAnimationFrame(step);
@@ -472,11 +507,11 @@
             function updateStats() {
                 const stats = {
                     total: hospitals.length,
-                    beds: hospitals.reduce((sum, h) => sum + h.beds, 0),
-                    icu: hospitals.reduce((sum, h) => sum + h.icu, 0),
-                    private: hospitals.filter(h => h.type === "مستشفى خاص").length,
-                    general: hospitals.filter(h => h.type === "مستشفيات عامة").length,
-                    specialized: hospitals.filter(h => h.type === "مستشفيات متخصصة").length,
+                    beds: hospitals.reduce((sum, h) => sum + (parseInt(h['عدد أسرة التنويم']) || 0), 0),
+                    icu: hospitals.reduce((sum, h) => sum + (parseInt(h['عدد اسرة العناية المركزة كبار']) || 0), 0),
+                    private: hospitals.filter(h => h['نوع المستشفى'] === "مستشفى خاص").length,
+                    general: hospitals.filter(h => h['نوع المستشفى'] === "مستشفيات عامة").length,
+                    specialized: hospitals.filter(h => h['نوع المستشفى'] === "مستشفيات متخصصة").length,
                 };
                 
                 animateCounter(document.querySelector('#total-hospitals .stat-number'), stats.total);
@@ -488,39 +523,39 @@
             }
 
             function getUserLocation() {
-                if (!navigator.geolocation) return;
+                if (!navigator.geolocation) {
+                    showNotification("خطأ: متصفحك لا يدعم تحديد الموقع.", 'error');
+                    return;
+                }
+                
                 navigator.geolocation.getCurrentPosition(pos => {
-                    userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    const userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     UI.lat.textContent = userLocation.lat.toFixed(5);
                     UI.lng.textContent = userLocation.lng.toFixed(5);
                     UI.accuracy.textContent = `${Math.round(pos.coords.accuracy)} م`;
-                    updateDistances();
-                }, () => showNotification("لا يمكن الوصول لموقعك.", 'error'));
-            }
-
-            function updateDistances() {
-                if (!userLocation) return;
-                let closest = { dist: Infinity, hospital: null };
-                hospitals.forEach(h => {
-                    h.distance = haversine(userLocation.lat, userLocation.lng, h.lat, h.lng);
-                    if (h.distance < closest.dist) closest = { dist: h.distance, hospital: h };
+                    
+                    if (userMarker) {
+                        map.removeLayer(userMarker);
+                    }
+                    
+                    const userIcon = L.divIcon({
+                        className: 'leaflet-div-icon',
+                        html: `<div class="map-marker" style="background-color: #007e3a;"><i class="fas fa-user"></i></div>`,
+                        iconSize: [30, 42], iconAnchor: [15, 42]
+                    });
+                    userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map);
+                    userMarker.bindPopup("<b>موقعك الحالي</b>").openPopup();
+                    
+                    showNotification("تم تحديد موقعك بنجاح.", 'success');
+                }, error => {
+                    showNotification("لا يمكن الوصول لموقعك.", 'error');
                 });
-                hospitals.sort((a, b) => a.distance - b.distance);
-                filterAndRender();
-                if (closest.hospital) {
-                    UI.closestHospital.innerHTML = `
-                        <div class="info-item"><strong>الاسم:</strong> ${closest.hospital.name}</div>
-                        <div class="info-item"><strong>النوع:</strong> ${closest.hospital.type} - ${closest.hospital.city}</div>
-                        <div class="info-item"><strong>المسافة:</strong> ${closest.dist} كم</div>
-                        <a href="${closest.hospital.googleMaps}" target="_blank" class="action-btn" style="margin-top: 10px; width: 100%; justify-content: center;">
-                            <i class="fas fa-map-marked-alt"></i> الانتقال للموقع
-                        </a>
-                    `;
-                }
             }
 
             function haversine(lat1, lon1, lat2, lon2) {
-                const R = 6371, dLat = (lat2 - lat1) * Math.PI / 180, dLon = (lon2 - lon1) * Math.PI / 180;
+                const R = 6371;
+                const dLat = (lat2 - lat1) * Math.PI / 180;
+                const dLon = (lon2 - lon1) * Math.PI / 180;
                 const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
                 return parseFloat((R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a))).toFixed(1));
             }
@@ -530,75 +565,158 @@
                 const supervisor = UI.supervisorFilter.value;
                 const search = UI.searchInput.value.toLowerCase();
                 const filtered = hospitals.filter(h =>
-                    (type === '' || h.type === type) && (supervisor === '' || h.supervisor === supervisor) &&
-                    (h.name.toLowerCase().includes(search) || h.city.toLowerCase().includes(search))
+                    (type === '' || h['نوع المستشفى'] === type) && (supervisor === '' || h['الجهة المشرفة'] === supervisor) &&
+                    (h['أسم المستشفى'].toLowerCase().includes(search) || h['المحافظة'].toLowerCase().includes(search))
                 );
                 renderTable(filtered);
             }
 
             function showDetails(id) {
-                const h = hospitals.find(h => h.id === id);
-                if (!h) return;
-                UI.modalTitle.textContent = h.name;
-                const directionsUrl = userLocation ? `https://www.google.com/maps/dir/?api=1&origin=${userLocation.lat},${userLocation.lng}&destination=${h.lat},${h.lng}` : h.googleMaps;
-                UI.modalBody.innerHTML = `
-                    <div class="detail-group">
-                        <div class="detail-group-title">معلومات عامة</div>
-                        <div class="detail-item"><i class="fas fa-city detail-item-icon"></i><span class="detail-label">المحافظة:</span> ${h.city}</div>
-                        <div class="detail-item"><i class="fas fa-sitemap detail-item-icon"></i><span class="detail-label">النوع:</span> ${h.type}</div>
-                        <div class="detail-item"><i class="fas fa-building-user detail-item-icon"></i><span class="detail-label">الجهة المشرفة:</span> ${h.supervisor}</div>
-                    </div>
-                    <div class="detail-group">
-                        <div class="detail-group-title">السعة السريرية</div>
-                        <div class="detail-item"><i class="fas fa-bed-pulse detail-item-icon"></i><span class="detail-label">عدد الأسرة:</span> ${h.beds}</div>
-                        <div class="detail-item"><i class="fas fa-procedures detail-item-icon"></i><span class="detail-label">أسرة العناية:</span> ${h.icu}</div>
-                    </div>
-                    ${h.distance ? `<div class="detail-group">
-                        <div class="detail-group-title">المسافة</div>
-                        <div class="detail-item"><i class="fas fa-route detail-item-icon"></i><span class="detail-label">المسافة منك:</span> ${h.distance} كم</div>
-                    </div>` : ''}
-                    <div class="action-buttons">
-                        <a href="${h.googleMaps}" target="_blank" class="action-btn btn-primary"><i class="fas fa-map-marked-alt"></i> عرض على الخريطة</a>
-                        <a href="${directionsUrl}" target="_blank" class="action-btn btn-secondary"><i class="fas fa-directions"></i> اتجاهات السير</a>
-                    </div>
-                `;
-                UI.modal.classList.remove('closing');
+                const hospital = hospitals.find(h => h.id === id);
+                if (!hospital) return;
+                currentHospital = hospital;
+                
+                UI.modalTitle.textContent = hospital['أسم المستشفى'];
+                
+                let detailsHTML = '';
+                const excludedKeys = ['id', 'Latitude', 'Longitude', 'موقع المنشأة في قوقل ماب'];
+                const categorizedKeys = {
+                    'بيانات المستشفى العامة': ['المحافظة', 'نوع المستشفى', 'الجهة المشرفة', 'مدير المستشفى', 'ملكية المباني'],
+                    'إحصائيات الأسرة': ['عدد أسرة التنويم', 'عدد اسرة العناية المركزة كبار', 'عدد اسرة العناية المركزة أطفال', 'عدد اسرة العناية المركزة حديثي الولادة', 'عدد أسرة العناية القلبية', 'عدد أسرة الطوارئ', 'عدد أسرة العزل'],
+                    'إحصائيات المرضى والعيادات': ['عدد المستفيدين', 'عدد المراجعين', 'عدد الحالات الطارئة والإصابات', 'عدد العيادات'],
+                    'بيانات الإسعاف': ['عدد سيارات الإسعاف المستلمة', 'عدد بسطات الإسعاف الأساسية', 'الإسعافات مثل : سداحي'],
+                    'الخدمات والمشاريع': ['الخدمات النوعية: مثل وحدة علاج السمنة', 'المركز التخصصي: مثال مركز السكري والغدد الصماء', 'أذكر المشاريع القائمة', 'أذكر المشاريع المنتظرة', 'أذكر المشاريع المستقبلية'],
+                    'بيانات إضافية': []
+                };
+
+                const iconMap = {
+                    'المحافظة': 'fa-map-marker-alt',
+                    'نوع المستشفى': 'fa-hospital-symbol',
+                    'الجهة المشرفة': 'fa-building',
+                    'مدير المستشفى': 'fa-user-tie',
+                    'ملكية المباني': 'fa-building',
+                    'عدد أسرة التنويم': 'fa-bed',
+                    'عدد اسرة العناية المركزة كبار': 'fa-procedures',
+                    'عدد اسرة العناية المركزة أطفال': 'fa-child-reaching',
+                    'عدد اسرة العناية المركزة حديثي الولادة': 'fa-baby',
+                    'عدد أسرة العناية القلبية': 'fa-heartbeat',
+                    'عدد أسرة الطوارئ': 'fa-exclamation-triangle',
+                    'عدد أسرة العزل': 'fa-head-side-mask',
+                    'عدد المستفيدين': 'fa-user-group',
+                    'عدد المراجعين': 'fa-user-check',
+                    'عدد الحالات الطارئة والإصابات': 'fa-briefcase-medical',
+                    'عدد العيادات': 'fa-clinic-medical',
+                    'عدد سيارات الإسعاف المستلمة': 'fa-car-on',
+                    'عدد بسطات الإسعاف الأساسية': 'fa-car-on',
+                    'الإسعافات مثل : سداحي': 'fa-truck-medical',
+                    'الخدمات النوعية: مثل وحدة علاج السمنة': 'fa-hand-holding-medical',
+                    'المركز التخصصي: مثال مركز السكري والغدد الصماء': 'fa-ribbon',
+                    'أذكر المشاريع القائمة': 'fa-clipboard-check',
+                    'أذكر المشاريع المنتظرة': 'fa-clock',
+                    'أذكر المشاريع المستقبلية': 'fa-lightbulb'
+                };
+
+                const allKnownKeys = Object.values(categorizedKeys).flat();
+                
+                // Add any extra keys from the data that are not in our predefined categories
+                for (const key in hospital) {
+                    if (!allKnownKeys.includes(key) && !excludedKeys.includes(key)) {
+                        const value = hospital[key];
+                        // Check if value is not empty and is a string before trimming
+                        if (value !== null && value !== undefined && String(value).trim() !== '') {
+                            categorizedKeys['بيانات إضافية'].push(key);
+                            iconMap[key] = 'fa-circle-info';
+                        }
+                    }
+                }
+
+                for (const section in categorizedKeys) {
+                    const sectionKeys = categorizedKeys[section];
+                    let sectionContent = '';
+                    let hasContent = false;
+                    
+                    sectionKeys.forEach(key => {
+                        const value = hospital[key];
+                        // Convert to string and trim to handle numbers/empty cells
+                        const trimmedValue = (value !== null && value !== undefined) ? String(value).trim() : '';
+
+                        if (trimmedValue !== '') {
+                            const icon = iconMap[key] || 'fa-circle-info';
+                            sectionContent += `
+                                <div class="detail-item">
+                                    <i class="fas ${icon} detail-item-icon"></i>
+                                    <span class="detail-label">${key}:</span>
+                                    <span>${trimmedValue}</span>
+                                </div>
+                            `;
+                            hasContent = true;
+                        }
+                    });
+
+                    if (hasContent) {
+                        detailsHTML += `
+                            <div class="detail-group">
+                                <div class="detail-group-title">${section}</div>
+                                ${sectionContent}
+                            </div>
+                        `;
+                    }
+                }
+                
+                UI.modalBody.innerHTML = detailsHTML;
                 UI.modal.style.display = 'flex';
             }
             
-            function closeModal() {
-                UI.modal.classList.add('closing');
-                UI.modal.addEventListener('animationend', () => {
-                    UI.modal.style.display = 'none';
-                    UI.modal.classList.remove('closing');
-                }, { once: true });
-            }
-
-            function showNotification(message, type = 'success') {
+            function showNotification(message, type) {
                 UI.notificationText.textContent = message;
-                UI.notification.style.backgroundColor = type === 'error' ? '#c82333' : 'var(--moh-green)';
-                UI.notification.classList.add('show');
-                setTimeout(() => UI.notification.classList.remove('show'), 4000);
+                UI.notification.className = `notification show ${type}`;
+                setTimeout(() => {
+                    UI.notification.classList.remove('show');
+                }, 3000);
             }
 
             function addEventListeners() {
                 UI.typeFilter.addEventListener('change', filterAndRender);
                 UI.supervisorFilter.addEventListener('change', filterAndRender);
                 UI.searchInput.addEventListener('input', filterAndRender);
-                document.getElementById('get-location-btn').addEventListener('click', getUserLocation);
+                UI.getLocationBtn.addEventListener('click', getUserLocation);
                 
-                UI.modal.addEventListener('click', e => { 
-                    if (e.target === UI.modal || e.target.id === 'close-modal' || e.target.closest('.close-btn')) {
-                        closeModal();
+                UI.tableBody.addEventListener('click', e => {
+                    if (e.target.closest('.details-btn')) {
+                        const id = parseInt(e.target.closest('.details-btn').dataset.id);
+                        showDetails(id);
                     }
                 });
                 
-                UI.tableBody.addEventListener('click', e => {
-                    const btn = e.target.closest('.details-btn');
-                    if (btn) showDetails(parseInt(btn.dataset.id));
+                UI.modal.addEventListener('click', e => {
+                    if (e.target === UI.modal || e.target.closest('#close-modal')) {
+                        UI.modal.classList.add('closing');
+                        setTimeout(() => {
+                            UI.modal.style.display = 'none';
+                            UI.modal.classList.remove('closing');
+                        }, 300);
+                    }
                 });
-                window.addEventListener('scroll', () => UI.backToTop.classList.toggle('visible', window.scrollY > 300));
-                UI.backToTop.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+                
+                UI.modalMapsBtn.addEventListener('click', () => {
+                    if (currentHospital && currentHospital['موقع المنشأة في قوقل ماب']) {
+                        window.open(currentHospital['موقع المنشأة في قوقل ماب'], '_blank');
+                    } else {
+                        showNotification("لا يوجد رابط لخرائط جوجل لهذا المستشفى.", 'error');
+                    }
+                });
+
+                document.getElementById('back-to-top').addEventListener('click', () => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                });
+
+                window.addEventListener('scroll', () => {
+                    if (window.scrollY > 300) {
+                        UI.backToTop.classList.add('visible');
+                    } else {
+                        UI.backToTop.classList.remove('visible');
+                    }
+                });
             }
 
             fetchData();
