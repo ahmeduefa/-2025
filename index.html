@@ -100,7 +100,14 @@
             transform: rotate(15deg) scale(1.1);
             transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
         }
-        .stat-number { font-size: 1.5rem; font-weight: bold; margin-bottom: 5px; min-height: 30px; }
+        .stat-number { 
+            font-size: 1.8rem; 
+            font-weight: bold; 
+            margin-bottom: 8px; 
+            color: var(--moh-gold);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.15);
+            min-height: 30px;
+        }
         .stat-label { font-size: 0.85rem; opacity: 0.9; }
         button, .action-btn {
             background: var(--moh-green); border: none; color: var(--moh-white);
@@ -146,7 +153,7 @@
         }
         .modal-content {
             background-color: var(--moh-white); padding: 25px 30px; border-radius: 12px;
-            width: 90%; max-width: 600px; max-height: 90vh; overflow-y: auto;
+            width: 90%; max-width: 700px; max-height: 90vh; overflow-y: auto;
             box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2); animation: scaleIn 0.4s ease-out;
         }
         @keyframes scaleIn { from { transform: scale(0.8) translateY(20px); opacity: 0; } to { transform: scale(1) translateY(0); opacity: 1; } }
@@ -157,9 +164,9 @@
         .close-btn { background: #f1f1f1; border: none; font-size: 1.2rem; cursor: pointer; color: #555; width: 30px; height: 30px; border-radius: 50%; transition: all 0.3s; }
         .close-btn:hover { background: #e0e0e0; color: black; }
         .detail-group { margin-bottom: 20px; }
-        .detail-group-title { font-weight: bold; color: var(--moh-green); margin-bottom: 12px; border-bottom: 2px solid var(--moh-light-green); padding-bottom: 5px; font-size: 1.1rem; }
-        .detail-item { margin-bottom: 12px; display: flex; align-items: center; font-size: 1rem; }
-        .detail-item-icon { color: var(--moh-green); min-width: 30px; font-size: 1.1rem; }
+        .detail-group-title { font-weight: bold; color: var(--moh-green); margin-bottom: 12px; border-bottom: 2px solid var(--moh-light-green); padding-bottom: 5px; font-size: 1.1rem; display:flex; align-items:center; gap:8px; }
+        .detail-item { margin-bottom: 12px; display: flex; align-items: center; font-size: 1rem; gap:8px; justify-content:flex-end; }
+        .detail-item-icon { color: var(--moh-green); min-width: 30px; font-size: 1.1rem; display:inline-flex; align-items:center; justify-content:center; }
         .detail-label { font-weight: bold; color: #555; margin-left: 5px; }
         .action-buttons { display: flex; gap: 15px; margin-top: 25px; flex-wrap: wrap; }
         .btn-primary { background-color: var(--moh-green); }
@@ -179,10 +186,10 @@
         .back-to-top.visible { opacity: 1; visibility: visible; }
         footer { text-align: center; padding: 20px; margin-top: 40px; color: var(--moh-green); font-size: 0.9rem; }
         .leaflet-div-icon { border: none; background-color: transparent; }
-        .map-marker { width: 30px; height: 30px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 5px rgba(0,0,0,0.4); border: 2px solid white; }
+        .map-marker { width: 34px; height: 34px; border-radius: 50% 50% 50% 0; transform: rotate(-45deg); display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 6px rgba(0,0,0,0.25); border: 2px solid white; }
         .map-marker i { transform: rotate(45deg); font-size: 14px; color: white; }
         .legend { padding: 10px; background: white; border-radius: 5px; box-shadow: 0 1px 5px rgba(0,0,0,0.4); line-height: 1.5; font-size: 12px; }
-        .legend i { width: 18px; height: 18px; float: right; margin-left: 8px; border-radius: 50%; }
+        .legend i { width: 18px; height: 18px; float: right; margin-left: 8px; border-radius: 50%; display:inline-block; }
         @media (max-width: 992px) { .dashboard { grid-template-columns: 1fr; } h1 { font-size: 1.5rem; } }
         @media (max-width: 768px) {
             body { padding: 10px; }
@@ -227,8 +234,8 @@
                     <h3><i class="fas fa-hospital"></i> مستشفى عسير المركزي</h3>
                     <div id="asir-hospital-info">
                         <div class="info-item"><strong>الموقع:</strong> أبها</div>
-                        <div class="info-item"><strong>خط العرض:</strong> ${18.2195}</div>
-                        <div class="info-item"><strong>خط الطول:</strong> ${42.535}</div>
+                        <div class="info-item"><strong>خط العرض:</strong> 18.2195</div>
+                        <div class="info-item"><strong>خط الطول:</strong> 42.535</div>
                     </div>
                 </div>
             </div>
@@ -301,13 +308,13 @@
         document.addEventListener('DOMContentLoaded', () => {
             let hospitals = [];
             const ASIR_CENTRAL_HOSPITAL = {
-                lat: 18.2195, 
-                lng: 42.535, 
+                lat: 18.2195,
+                lng: 42.535,
                 name: "مستشفى عسير المركزي"
             };
             let map;
             let legend;
-            let userMarker; 
+            let userMarker;
             const hospitalMarkers = L.layerGroup();
             let currentHospital = null;
 
@@ -332,7 +339,7 @@
             };
 
             const DATA_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vR6OX3acZw-8gzNb36iUGra5OI-7TQmhEeZTxpoyyPO1kdYNlycokRPa4FWf9pY6CRRRu9fl0SHhBVZ/pub?gid=0&single=true&output=csv";
-            
+
             async function fetchData() {
                 try {
                     const response = await fetch(DATA_URL, { cache: 'no-store' });
@@ -340,7 +347,7 @@
                     const csvText = await response.text();
                     const results = Papa.parse(csvText, { header: true, skipEmptyLines: true, transformHeader: h => h.trim() });
                     if (results.errors.length) throw new Error(`Parsing error: ${results.errors[0].message}`);
-                    
+
                     const data = results.data.map((row, i) => {
                         const parsedRow = {};
                         for (const key in row) {
@@ -349,23 +356,23 @@
                         parsedRow.id = i;
                         parsedRow.lat = parseFloat(row['Latitude']);
                         parsedRow.lng = parseFloat(row['Longitude']);
-                        if (parsedRow.lat && parsedRow.lng) {
+                        if (!isNaN(parsedRow.lat) && !isNaN(parsedRow.lng)) {
                             parsedRow.distanceFromAsir = haversine(parsedRow.lat, parsedRow.lng, ASIR_CENTRAL_HOSPITAL.lat, ASIR_CENTRAL_HOSPITAL.lng);
                         }
                         return parsedRow;
                     });
-                    
-                    hospitals = data.filter(h => h.lat && h.lng && h['أسم المستشفى'] !== 'N/A' && h['أسم المستشفى']);
+
+                    hospitals = data.filter(h => !isNaN(h.lat) && !isNaN(h.lng) && h['أسم المستشفى'] && h['أسم المستشفى'] !== 'N/A');
                     if (hospitals.length === 0) throw new Error("No valid data found in the sheet.");
                     initializeApp();
                     showNotification(`تم تحميل ${hospitals.length} مستشفى بنجاح`, 'success');
                 } catch (error) {
                     console.error("Fetch Data Error:", error);
-                    UI.loaderText.textContent = `❌ فشل تحميل البيانات: ${error.message}`;
+                    if (UI.loaderText) UI.loaderText.textContent = `❌ فشل تحميل البيانات: ${error.message}`;
                     showNotification("فشل في جلب البيانات. تحقق من الرابط وإعدادات النشر.", 'error');
                 }
             }
-            
+
             function initializeApp() {
                 initMap();
                 addMapLegend();
@@ -373,7 +380,7 @@
                 updateStats();
                 renderTable(hospitals);
                 addEventListeners();
-                
+
                 const observer = new IntersectionObserver((entries) => {
                     entries.forEach(entry => {
                         if (entry.isIntersecting) {
@@ -386,13 +393,28 @@
             }
 
             function initMap() {
-                map = L.map(UI.mapContainer).setView([18.5, 42.5], 8); 
+                // مركزة على منطقة عسير (أبها)
+                map = L.map(UI.mapContainer).setView([18.216, 42.5], 9);
+
                 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '© OpenStreetMap' }).addTo(map);
-                
+
+                // رسم حدود تقريبية لمنطقة عسير (يمكن استبدالها بGeoJSON أدق لاحقاً)
+                const asirPolygonCoords = [
+                    [19.25, 41.0],
+                    [19.3, 42.2],
+                    [19.0, 43.0],
+                    [18.2, 43.5],
+                    [17.4, 42.6],
+                    [17.7, 41.4]
+                ];
+                const asirPoly = L.polygon(asirPolygonCoords, { color: varOr('--moh-green','#007e3a'), weight: 3, fillOpacity: 0.06 }).addTo(map);
+                // اضبط العرض ليظهر المنطقة بوضوح (اختياري)
+                // map.fitBounds(asirPoly.getBounds(), { padding: [40, 40] });
+
                 const asirHospitalIcon = L.divIcon({
                     className: 'leaflet-div-icon',
                     html: `<div class="map-marker" style="background-color: #28a745;"><i class="fas fa-star-of-life"></i></div>`,
-                    iconSize: [30, 42], iconAnchor: [15, 42]
+                    iconSize: [34, 42], iconAnchor: [17, 42]
                 });
                 L.marker([ASIR_CENTRAL_HOSPITAL.lat, ASIR_CENTRAL_HOSPITAL.lng], { icon: asirHospitalIcon }).addTo(map)
                     .bindPopup(`<b>${ASIR_CENTRAL_HOSPITAL.name}</b>`).openPopup();
@@ -401,10 +423,19 @@
                 renderMapMarkers(hospitals);
             }
 
+            // small helper to read CSS var fallback
+            function varOr(name, fallback) {
+                try {
+                    return getComputedStyle(document.documentElement).getPropertyValue(name) || fallback;
+                } catch (e) {
+                    return fallback;
+                }
+            }
+
             function getMarkerStyle(hospitalType) {
                 switch (hospitalType) {
                     case 'مستشفيات عامة': return { color: '#007bff', icon: 'fa-hospital' };
-                    case 'مستشفيات متخصصة': return { color: '#dc3545', icon: 'fa-heart-pulse' };
+                    case 'مستشفيات متخصصة': return { color: '#dc3545', icon: 'fa-heartbeat' };
                     case 'مستشفيات مركزية': return { color: '#28a745', icon: 'fa-star-of-life' };
                     case 'مستشفى خاص': return { color: '#ffc107', icon: 'fa-clinic-medical' };
                     default: return { color: '#6c757d', icon: 'fa-h-square' };
@@ -418,9 +449,14 @@
                     const icon = L.divIcon({
                         className: 'leaflet-div-icon',
                         html: `<div class="map-marker" style="background-color: ${style.color};"><i class="fas ${style.icon}"></i></div>`,
-                        iconSize: [30, 42], iconAnchor: [15, 42]
+                        iconSize: [34, 42], iconAnchor: [17, 42]
                     });
-                    const marker = L.marker([h.lat, h.lng], { icon: icon }).bindPopup(`<b>${h['أسم المستشفى']}</b><br>${h['نوع المستشفى']}`);
+                    const marker = L.marker([h.lat, h.lng], { icon: icon })
+                        .bindPopup(`<b>${h['أسم المستشفى']}</b><br>${h['المحافظة'] || ''}`);
+                    marker.on('click', () => {
+                        // عند الضغط على العلامة افتح نفس مودال التفاصيل
+                        showDetails(h.id);
+                    });
                     hospitalMarkers.addLayer(marker);
                 });
             }
@@ -438,7 +474,7 @@
                         'أخرى': getMarkerStyle('default')
                     };
                     div.innerHTML += '<h4>أنواع المستشفيات</h4>';
-                    for (let key in types) { div.innerHTML += `<i style="background: ${types[key].color}"></i> ${key}<br>`; }
+                    for (let key in types) { div.innerHTML += `<i style="background: ${types[key].color};"></i> ${key}<br>`; }
                     return div;
                 };
                 legend.addTo(map);
@@ -450,7 +486,7 @@
                 UI.typeFilter.innerHTML = '<option value="">جميع الأنواع</option>' + types.map(t => `<option value="${t}">${t}</option>`).join('');
                 UI.supervisorFilter.innerHTML = '<option value="">جميع الجهات</option>' + supervisors.map(s => `<option value="${s}">${s}</option>`).join('');
             }
-            
+
             function renderTable(data) {
                 UI.tableBody.innerHTML = '';
                 if (!data.length) {
@@ -462,26 +498,26 @@
                     <tr>
                         <td>${i + 1}</td>
                         <td>${h['أسم المستشفى']}</td>
-                        <td>${h['المحافظة']}</td>
-                        <td>${h['نوع المستشفى']}</td>
-                        <td>${h['الجهة المشرفة']}</td>
-                        <td>${h['عدد أسرة التنويم'] || '--'}</td>
-                        <td>${h['عدد اسرة العناية المركزة كبار'] || '--'}</td>
+                        <td>${h['المحافظة'] || '--'}</td>
+                        <td>${h['نوع المستشفى'] || '--'}</td>
+                        <td>${h['الجهة المشرفة'] || '--'}</td>
+                        <td>${h['عدد أسرة التنويم'] || h['عدد الأسرة'] || '--'}</td>
+                        <td>${h['عدد اسرة العناية المركزة كبار'] || h['عدد اسرة العناية'] || '--'}</td>
                         <td>${h.distanceFromAsir ? `${h.distanceFromAsir} كم` : '--'}</td>
-                        <td><button class="details-btn" data-id="${h.id}"><i class="fas fa-info-circle"></i></button></td>
+                        <td><button class="details-btn" data-id="${h.id}" title="عرض التفاصيل"><i class="fas fa-info-circle"></i></button></td>
                     </tr>`).join('');
                 UI.tableBody.innerHTML = rowsHTML;
-                
+
                 const rows = UI.tableBody.querySelectorAll('tr');
                 rows.forEach((row, index) => {
                     setTimeout(() => {
                         row.classList.add('visible');
                     }, index * 40);
                 });
-                
+
                 renderMapMarkers(data);
             }
-            
+
             function animateCounter(el, end, duration = 1500) {
                 let start = 0;
                 const range = end - start;
@@ -507,19 +543,28 @@
             function updateStats() {
                 const stats = {
                     total: hospitals.length,
-                    beds: hospitals.reduce((sum, h) => sum + (parseInt(h['عدد أسرة التنويم']) || 0), 0),
-                    icu: hospitals.reduce((sum, h) => sum + (parseInt(h['عدد اسرة العناية المركزة كبار']) || 0), 0),
+                    beds: hospitals.reduce((sum, h) => sum + (parseInt(h['عدد أسرة التنويم']) || parseInt(h['عدد الأسرة']) || 0), 0),
+                    icu: hospitals.reduce((sum, h) => sum + (parseInt(h['عدد اسرة العناية المركزة كبار']) || parseInt(h['عدد اسرة العناية']) || 0), 0),
                     private: hospitals.filter(h => h['نوع المستشفى'] === "مستشفى خاص").length,
                     general: hospitals.filter(h => h['نوع المستشفى'] === "مستشفيات عامة").length,
                     specialized: hospitals.filter(h => h['نوع المستشفى'] === "مستشفيات متخصصة").length,
                 };
-                
-                animateCounter(document.querySelector('#total-hospitals .stat-number'), stats.total);
-                animateCounter(document.querySelector('#total-beds .stat-number'), stats.beds);
-                animateCounter(document.querySelector('#total-icu .stat-number'), stats.icu);
-                animateCounter(document.querySelector('#private-hospitals .stat-number'), stats.private);
-                animateCounter(document.querySelector('#general-hospitals .stat-number'), stats.general);
-                animateCounter(document.querySelector('#specialized-hospitals .stat-number'), stats.specialized);
+
+                animateCounter(document.querySelector('#total-hospitals .stat-number') || document.querySelector('#total-hospitals .stat-number'), stats.total);
+                // fallback selectors: some cards' .stat-number are nested directly - ensure update properly
+                const sTotal = document.querySelector('#total-hospitals .stat-number') || document.querySelector('#total-hospitals');
+                const sBeds = document.querySelector('#total-beds .stat-number') || document.querySelector('#total-beds');
+                const sIcu = document.querySelector('#total-icu .stat-number') || document.querySelector('#total-icu');
+                const sPrivate = document.querySelector('#private-hospitals .stat-number') || document.querySelector('#private-hospitals');
+                const sGeneral = document.querySelector('#general-hospitals .stat-number') || document.querySelector('#general-hospitals');
+                const sSpecial = document.querySelector('#specialized-hospitals .stat-number') || document.querySelector('#specialized-hospitals');
+
+                if (sTotal) animateCounter(sTotal, stats.total);
+                if (sBeds) animateCounter(sBeds, stats.beds);
+                if (sIcu) animateCounter(sIcu, stats.icu);
+                if (sPrivate) animateCounter(sPrivate, stats.private);
+                if (sGeneral) animateCounter(sGeneral, stats.general);
+                if (sSpecial) animateCounter(sSpecial, stats.specialized);
             }
 
             function getUserLocation() {
@@ -527,25 +572,25 @@
                     showNotification("خطأ: متصفحك لا يدعم تحديد الموقع.", 'error');
                     return;
                 }
-                
+
                 navigator.geolocation.getCurrentPosition(pos => {
                     const userLocation = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     UI.lat.textContent = userLocation.lat.toFixed(5);
                     UI.lng.textContent = userLocation.lng.toFixed(5);
                     UI.accuracy.textContent = `${Math.round(pos.coords.accuracy)} م`;
-                    
+
                     if (userMarker) {
                         map.removeLayer(userMarker);
                     }
-                    
+
                     const userIcon = L.divIcon({
                         className: 'leaflet-div-icon',
                         html: `<div class="map-marker" style="background-color: #007e3a;"><i class="fas fa-user"></i></div>`,
-                        iconSize: [30, 42], iconAnchor: [15, 42]
+                        iconSize: [34, 42], iconAnchor: [17, 42]
                     });
                     userMarker = L.marker([userLocation.lat, userLocation.lng], { icon: userIcon }).addTo(map);
                     userMarker.bindPopup("<b>موقعك الحالي</b>").openPopup();
-                    
+
                     showNotification("تم تحديد موقعك بنجاح.", 'success');
                 }, error => {
                     showNotification("لا يمكن الوصول لموقعك.", 'error');
@@ -566,7 +611,7 @@
                 const search = UI.searchInput.value.toLowerCase();
                 const filtered = hospitals.filter(h =>
                     (type === '' || h['نوع المستشفى'] === type) && (supervisor === '' || h['الجهة المشرفة'] === supervisor) &&
-                    (h['أسم المستشفى'].toLowerCase().includes(search) || h['المحافظة'].toLowerCase().includes(search))
+                    ( (h['أسم المستشفى'] && h['أسم المستشفى'].toLowerCase().includes(search)) || (h['المحافظة'] && h['المحافظة'].toLowerCase().includes(search)) )
                 );
                 renderTable(filtered);
             }
@@ -575,14 +620,15 @@
                 const hospital = hospitals.find(h => h.id === id);
                 if (!hospital) return;
                 currentHospital = hospital;
-                
-                UI.modalTitle.textContent = hospital['أسم المستشفى'];
-                
+
+                UI.modalTitle.textContent = hospital['أسم المستشفى'] || 'تفاصيل المستشفى';
+
+                // نستخدم نفس التصنيف اللي كان عندك مع تحسين العرض
                 let detailsHTML = '';
                 const excludedKeys = ['id', 'Latitude', 'Longitude', 'موقع المنشأة في قوقل ماب'];
                 const categorizedKeys = {
                     'بيانات المستشفى العامة': ['المحافظة', 'نوع المستشفى', 'الجهة المشرفة', 'مدير المستشفى', 'ملكية المباني'],
-                    'إحصائيات الأسرة': ['عدد أسرة التنويم', 'عدد اسرة العناية المركزة كبار', 'عدد اسرة العناية المركزة أطفال', 'عدد اسرة العناية المركزة حديثي الولادة', 'عدد أسرة العناية القلبية', 'عدد أسرة الطوارئ', 'عدد أسرة العزل'],
+                    'إحصائيات الأسرة': ['عدد أسرة التنويم', 'عدد اسرة العناية المركزة كبار', 'عدد اسرة العناية المركزة أطفال', 'عدد اسرة العناية المركزة حديثي الولادة', 'عدد أسرة العناية القلبية', 'عدد أسرة الطوارئ', 'عدد أسرة العزل', 'عدد الأسرة'],
                     'إحصائيات المرضى والعيادات': ['عدد المستفيدين', 'عدد المراجعين', 'عدد الحالات الطارئة والإصابات', 'عدد العيادات'],
                     'بيانات الإسعاف': ['عدد سيارات الإسعاف المستلمة', 'عدد بسطات الإسعاف الأساسية', 'الإسعافات مثل : سداحي'],
                     'الخدمات والمشاريع': ['الخدمات النوعية: مثل وحدة علاج السمنة', 'المركز التخصصي: مثال مركز السكري والغدد الصماء', 'أذكر المشاريع القائمة', 'أذكر المشاريع المنتظرة', 'أذكر المشاريع المستقبلية'],
@@ -606,8 +652,8 @@
                     'عدد المراجعين': 'fa-user-check',
                     'عدد الحالات الطارئة والإصابات': 'fa-briefcase-medical',
                     'عدد العيادات': 'fa-clinic-medical',
-                    'عدد سيارات الإسعاف المستلمة': 'fa-car-on',
-                    'عدد بسطات الإسعاف الأساسية': 'fa-car-on',
+                    'عدد سيارات الإسعاف المستلمة': 'fa-car-side',
+                    'عدد بسطات الإسعاف الأساسية': 'fa-car-side',
                     'الإسعافات مثل : سداحي': 'fa-truck-medical',
                     'الخدمات النوعية: مثل وحدة علاج السمنة': 'fa-hand-holding-medical',
                     'المركز التخصصي: مثال مركز السكري والغدد الصماء': 'fa-ribbon',
@@ -617,14 +663,12 @@
                 };
 
                 const allKnownKeys = Object.values(categorizedKeys).flat();
-                
+
                 // Add any extra keys from the data that are not in our predefined categories
                 for (const key in hospital) {
                     if (!allKnownKeys.includes(key) && !excludedKeys.includes(key)) {
                         const value = hospital[key];
-                        // Convert to string and trim to handle numbers/empty cells
                         const trimmedValue = (value !== null && value !== undefined) ? String(value).trim() : '';
-
                         if (trimmedValue !== '') {
                             categorizedKeys['بيانات إضافية'].push(key);
                             iconMap[key] = 'fa-circle-info';
@@ -636,19 +680,18 @@
                     const sectionKeys = categorizedKeys[section];
                     let sectionContent = '';
                     let hasContent = false;
-                    
+
                     sectionKeys.forEach(key => {
                         const value = hospital[key];
-                        // Convert to string and trim to handle numbers/empty cells
                         const trimmedValue = (value !== null && value !== undefined) ? String(value).trim() : '';
 
                         if (trimmedValue !== '') {
                             const icon = iconMap[key] || 'fa-circle-info';
                             sectionContent += `
                                 <div class="detail-item">
-                                    <i class="fas ${icon} detail-item-icon"></i>
                                     <span class="detail-label">${key}:</span>
                                     <span>${trimmedValue}</span>
+                                    <i class="fas ${icon} detail-item-icon" aria-hidden="true"></i>
                                 </div>
                             `;
                             hasContent = true;
@@ -664,11 +707,22 @@
                         `;
                     }
                 }
-                
+
+                // إحداثيات ومسافة (عرض واضحة في أسفل)
+                detailsHTML += `
+                    <div class="detail-group">
+                        <div class="detail-group-title"><i class="fas fa-location-dot"></i> الإحداثيات والمسافة</div>
+                        <div class="detail-item"><span class="detail-label">خط العرض:</span><span>${hospital.lat || '--'}</span></div>
+                        <div class="detail-item"><span class="detail-label">خط الطول:</span><span>${hospital.lng || '--'}</span></div>
+                        <div class="detail-item"><span class="detail-label">المسافة من عسير المركزي:</span><span>${hospital.distanceFromAsir ? hospital.distanceFromAsir + ' كم' : '--'}</span></div>
+                    </div>
+                `;
+
                 UI.modalBody.innerHTML = detailsHTML;
+
                 UI.modal.style.display = 'flex';
             }
-            
+
             function showNotification(message, type) {
                 UI.notificationText.textContent = message;
                 UI.notification.className = `notification show ${type}`;
@@ -682,14 +736,14 @@
                 UI.supervisorFilter.addEventListener('change', filterAndRender);
                 UI.searchInput.addEventListener('input', filterAndRender);
                 UI.getLocationBtn.addEventListener('click', getUserLocation);
-                
+
                 UI.tableBody.addEventListener('click', e => {
                     if (e.target.closest('.details-btn')) {
                         const id = parseInt(e.target.closest('.details-btn').dataset.id);
                         showDetails(id);
                     }
                 });
-                
+
                 UI.modal.addEventListener('click', e => {
                     if (e.target === UI.modal || e.target.closest('#close-modal')) {
                         UI.modal.classList.add('closing');
@@ -699,10 +753,13 @@
                         }, 300);
                     }
                 });
-                
+
                 UI.modalMapsBtn.addEventListener('click', () => {
                     if (currentHospital && currentHospital['موقع المنشأة في قوقل ماب']) {
                         window.open(currentHospital['موقع المنشأة في قوقل ماب'], '_blank');
+                    } else if (currentHospital && currentHospital.lat && currentHospital.lng) {
+                        const q = `${currentHospital.lat},${currentHospital.lng}`;
+                        window.open(`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(q)}`, '_blank');
                     } else {
                         showNotification("لا يوجد رابط لخرائط جوجل لهذا المستشفى.", 'error');
                     }
